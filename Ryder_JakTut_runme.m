@@ -1,0 +1,304 @@
+% Test case for PINNICLE at the Onset of Ryder Glacier (Tile 32_09)
+% Gathering data into ISSM struct and running inversion to obtain basal friction coefficient C
+% clear
+steps=[0:4];
+
+if any(steps == 0)
+ISSMpath					= issmdir();
+Path2data					= '/Users/achartra/Library/CloudStorage/OneDrive-NASA/Greenland-scape/Data/';
+
+Now							= datetime;
+Now.Format					= "yyyyMMdd_HHmmss";
+structSaveName				= strcat('./Models/Ryder_test_I', char(Now));
+mdSaveName					= strcat('./Models/Ryder_test.', char(Now));
+% Get tile boundaries
+Tile						= '32_09';
+Region						= 'Ryder';
+
+load(strcat(Path2data,'GreenlandScape_Tiles.mat'))
+for ii = 1:length(Tiles)
+	Tile_names{ii}			= Tiles(ii).name;
+end
+
+Tile_idx					= find(strcmp(Tile_names, Tile));
+Tile_xmin					= Tiles(Tile_idx).X(1) * 1e3;
+Tile_xmax					= Tiles(Tile_idx).X(2) * 1e3;
+Tile_ymin					= Tiles(Tile_idx).Y(1) * 1e3;
+Tile_ymax					= Tiles(Tile_idx).Y(2) * 1e3;
+Tile_XY_pos					= [Tile_xmin, Tile_ymin; Tile_xmax, Tile_ymin; Tile_xmax, Tile_ymax; Tile_xmin, Tile_ymax; Tile_xmin, Tile_ymin];
+
+% Define desired model domain
+Res							= 1.5e3;
+Lx							= Tile_xmax - Tile_xmin;
+Ly							= Tile_ymax - Tile_ymin;
+nx							= Lx / Res;
+ny							= Ly / Res;
+end
+%%
+if any(steps==1) 
+	disp('   Step 1: Mesh creation');
+	md							= squaremesh(model,Lx, Ly, nx, ny);
+	md.mesh.x					= md.mesh.x + Tile_xmin;
+	md.mesh.y					= md.mesh.y + Tile_ymin;
+
+	%Get observed fields on mesh nodes
+	disp('   Loading BedMachine v5 data from NetCDF');
+	ncdata						= strcat(Path2data,'BedMachineGreenland-v5.nc');
+	x1							= double(ncread(ncdata,'x'))';
+	y1							= double(flipud(ncread(ncdata,'y')));
+
+	disp('   Loading velocity data from geotiff');
+	[velx, R]					= readgeoraster(strcat(Path2data,'GrIS_Meas_AvgSurfVel_speed_x_filt_150m.tif'));
+	vely						= readgeoraster(strcat(Path2data,'GrIS_Meas_AvgSurfVel_speed_y_filt_150m.tif'));
+	vel							= readgeoraster(strcat(Path2data,'GrIS_Meas_AvgSurfVel_speed_filt_150m.tif'));
+	velx						= flipud(velx);
+	vely						= flipud(vely);
+	vel							= flipud(vel);
+
+	vx		= InterpFromGridToMesh(x1,y1,velx,md.mesh.x,md.mesh.y,0);
+	vy		= InterpFromGridToMesh(x1,y1,vely,md.mesh.x,md.mesh.y,0);
+	vel		= InterpFromGridToMesh(x1,y1,vel,md.mesh.x,md.mesh.y,0);
+
+	save RydMesh md
+end 
+
+if any(steps==1) 
+	disp('   Step 2: Parameterization');
+	md						= loadmodel('RydMesh');
+
+	md						= setmask(md,'','');
+
+	% Name and Coordinate system
+	md.miscellaneous.name	= 'Ryder';
+	md.mesh.epsg			= 3413;
+
+	% Load rest of data
+	disp('   Loading BedMachine v5 data from NetCDF');
+	ncdata						= strcat(Path2data,'BedMachineGreenland-v5.nc');
+	x1							= double(ncread(ncdata,'x'))';
+	y1							= double(flipud(ncread(ncdata,'y')));
+	bed							= single(rot90(ncread(ncdata, 'bed'))); %(topg)
+	H							= single(rot90(ncread(ncdata, 'thickness'))); %(thk)
+
+	disp('   Loading GrIMP data from geotiff');
+	% load('/Users/achartra/Library/CloudStorage/OneDrive-NASA/Greenland-scape/Quad_A_newfilter.mat');
+	% h							= DEM_block.elev_surf_filt;
+	h							= readgeoraster(strcat(Path2data, 'GrIS_GrIMP_SurfElev_elev_surf_filt_150m.tif')); % surface elevation from a filtered, QGIS-resampled GeoTIFF of the original 30-m tiles, m
+	h							= flipud(h);
+	
+	disp('   Interpolating bedrock topography');
+	md.geometry.base = InterpFromGridToMesh(x1,y1,bed,md.mesh.x,md.mesh.y,0);
+
+	disp('	Interpolating surface elevation');
+	% md.geometry.surface			= InterpFromGridToMesh(BM5_block.x, BM5_block.y, h, md.mesh.x, md.mesh.y, 0);
+	md.geometry.surface			= InterpFromGridToMesh(x1, y1, h, md.mesh.x, md.mesh.y, 0);
+
+	disp('   Loading velocity data from geotiff');
+	[velx, R]					= readgeoraster(strcat(Path2data,'GrIS_Meas_AvgSurfVel_speed_x_filt_150m.tif'));
+	velx						= flipud(velx);
+	vely						= readgeoraster(strcat(Path2data,'GrIS_Meas_AvgSurfVel_speed_y_filt_150m.tif'));
+	vely						= flipud(vely);
+	vel							= readgeoraster(strcat(Path2data,'GrIS_Meas_AvgSurfVel_speed_filt_150m.tif'));
+	vel							= flipud(vel);
+	
+	disp('   Interpolating velocities');
+	md.inversion.vx_obs			= InterpFromGridToMesh(x1,y1,velx,md.mesh.x,md.mesh.y,0);
+	md.inversion.vy_obs			= InterpFromGridToMesh(x1,y1,vely,md.mesh.x,md.mesh.y,0);
+	md.inversion.vel_obs		= InterpFromGridToMesh(x1,y1,vel,md.mesh.x,md.mesh.y,0);
+	md.initialization.vx		= md.inversion.vx_obs;
+	md.initialization.vy		= md.inversion.vy_obs;
+	md.initialization.vel		= md.inversion.vel_obs;
+
+	% Get climate data from MAR
+	disp('	Loading climate data from MAR')
+	MAR							= load(strcat(Path2data,'mar_311_Avg.mat'));
+	temp						= MAR.TT_mean;
+	smb							= MAR.SMB_mean * md.materials.rho_water ./md.materials.rho_ice * 365.25 / 1000; % convert mm WE day-1 to m yr-1
+
+	disp('   Reconstruct thicknesses');
+	md.geometry.thickness		= md.geometry.surface - md.geometry.base;
+	pos0						= find(md.geometry.thickness<=10);
+	md.geometry.thickness(pos0)	= 10;
+
+	disp('	Reconstruct bed topography');
+	md.geometry.base			= md.geometry.surface - md.geometry.thickness;
+
+	disp('   Interpolating temperatures');
+	md.initialization.temperature	= InterpFromGridToMesh(MAR.x(1,:),MAR.y(:,1),temp,md.mesh.x,md.mesh.y,0)+273.15; %convert to Kelvin
+
+	disp('   Interpolating surface mass balance');
+	md.smb.mass_balance			= InterpFromGridToMesh(MAR.x(1,:),MAR.y(:,1),smb,md.mesh.x,md.mesh.y,0);
+end
+
+if any(steps==2)
+
+	% set rheology
+	disp('   Construct ice rheological properties');
+	md.materials.rheology_n		= 3*ones(md.mesh.numberofelements,1);
+	md.materials.rheology_B		= paterson(md.initialization.temperature);
+	md.damage.D					= zeros(md.mesh.numberofvertices,1);
+	%Reduce viscosity along the shear margins
+	% weakb						= ContourToMesh(md.mesh.elements,md.mesh.x,md.mesh.y,'WeakB.exp','node',2);
+	% pos							= find(weakb);
+	% md.materials.rheology_B(pos)= .3 * md.materials.rheology_B(pos);
+
+	% Deal with boundary conditions
+	disp('   Set other boundary conditions');
+	% md							= SetMarineIceSheetBC(md,'./Front.exp');
+	md							= SetIceSheetBC(md);
+	md.basalforcings.floatingice_melting_rate = zeros(md.mesh.numberofvertices,1);
+	md.basalforcings.groundedice_melting_rate = zeros(md.mesh.numberofvertices,1);
+
+	% Set basal friction coefficient guess - frictionwaterlayer
+	disp('   Construct basal friction parameters');
+	md.friction.coefficient		= 1e2 *ones(md.mesh.numberofvertices,1);
+	md.friction.coefficient(find(md.mask.ocean_levelset<0.)) = 0.;
+	md.friction.p				= ones(md.mesh.numberofelements,1);
+	md.friction.q				= ones(md.mesh.numberofelements,1);
+	% 
+	% disp('   Initial basal friction ');
+	% Wm							= 3; % m for Weertman friction law
+	% md.friction					= frictionweertman(); % Set friction law
+	% md.friction.m				= Wm .* ones(md.mesh.numberofelements, 1); % Set m exponent
+	% md.friction.C				= 200 .*ones(md.mesh.numberofvertices, 1); % set reference friction coefficient
+
+	% md=parameterize(md,'Ryd.par');
+
+	save RydPar md
+end 
+
+if any(steps==3) 
+	disp('   Step 3: Control method friction');
+	md=loadmodel('RydPar');
+
+	md=setflowequation(md,'SSA','all');
+
+	%Control general
+	md.inversion.iscontrol=1;
+	md.inversion.nsteps= 130;
+	md.inversion.step_threshold=0.99*ones(md.inversion.nsteps,1);
+	md.inversion.maxiter_per_step=5*ones(md.inversion.nsteps,1);
+	md.verbose=verbose('solution',true,'control',true);
+
+	%Cost functions
+	md.inversion.cost_functions=[101 103];
+	md.inversion.cost_functions_coefficients=ones(md.mesh.numberofvertices,2);
+	md.inversion.cost_functions_coefficients(:,1)=40;
+	md.inversion.cost_functions_coefficients(:,2)=1;
+
+	% %Cost functions
+	% md.inversion.cost_functions...
+	% 	= [101 103 501]; % Specify the cost functions - these are summed to calculate final cost function; weights to each can be applied below
+	% md.inversion.cost_functions_coefficients...
+	% 	= zeros(md.mesh.numberofvertices, numel(md.inversion.cost_functions)); % initialize weights for cost functions
+	% md.inversion.cost_functions_coefficients(:,1)...
+	% 	= 1000; % weight for cost function 101
+	% md.inversion.cost_functions_coefficients(:,2)...
+	% 	= 180; % weight for cost function 103
+	% md.inversion.cost_functions_coefficients(:,3)...
+	% 	= 1.5e-8; % weight for cost function 501
+	% pos							= find(md.mask.ice_levelset > 0); % Find where the ice mask is >0
+	% md.inversion.cost_functions_coefficients(pos, 1:2)...
+	% 	= 0; % Set coefficients to cost functions 101 and 103 to zero where the ice mask is >0
+
+	%Controls
+	md.inversion.control_parameters={'FrictionCoefficient'};
+	md.inversion.gradient_scaling(1:md.inversion.nsteps)=30;
+	md.inversion.min_parameters= 1e-2 .* ones(md.mesh.numberofvertices,1);
+	md.inversion.max_parameters= 5e4 .* ones(md.mesh.numberofvertices,1);
+
+	%Additional parameters
+	md.stressbalance.restol=0.01;
+	md.stressbalance.reltol=0.1;
+	md.stressbalance.abstol=NaN;
+
+	%Go solve
+	md.cluster=generic('name',oshostname,'np',4);
+	md=solve(md,'Stressbalance');
+
+	save RydControl md
+end 
+
+if any(steps==4) 
+	disp('   Plotting')
+	md=loadmodel('RydControl');
+
+	f1 = figure; plotmodel(md,'unit#all','km','axis#all','equal',...
+		'data',md.inversion.vel_obs,'title','Observed velocity',...
+		'data',md.results.StressbalanceSolution.Vel,'title','Modeled Velocity',...
+		'colorbar#1','off','colorbartitle#2','(m/yr)',...
+		'caxis#1',[0,150],...
+		'data',md.geometry.base,'title','Base elevation',...
+		'data',md.results.StressbalanceSolution.FrictionCoefficient,...
+		'title','Friction Coefficient',...
+		'colorbartitle#3','(m)', 'figure', f1);
+
+	f1 = figure; plotmodel(md,'unit#all','km','axis#all','image',...
+		'data', md.initialization.vx, 'title', 'u','colorbartitle#1','m/yr',...
+		'data', md.initialization.vy, 'title', 'v','colorbartitle#2','m/yr',...
+		'data', md.geometry.surface, 'title', 'surface elev.','colorbartitle#3','m',...
+		'data', md.results.StressbalanceSolution.FrictionCoefficient,'title','Friction Coefficient',...
+		'colormap#1-2', cmocean('thermal'),'colormap#3',demcmap(md.geometry.surface), 'figure', f1)
+end 
+% 
+% save(mdSaveName, 'md')
+% saveasstruct(md, strcat(structSaveName, '.mat'));
+
+
+%% Trying to work with PINNICLE outputs
+
+% Preds_file = './PINNs/Ryder_test_I20240729_140936_P20240730_122045/Ryder_test_I20240729_140936_P20240730_122045_predictions.mat'; % bad
+% Preds_file = './PINNs/Ryder_test_I20240729_140936_P20240731_153958/Ryder_test_I20240729_140936_P20240731_153958_predictions'; % weird
+% Preds_file = './PINNS/Ryder_test_I20240729_140936_P20240731_202434/Ryder_test_I20240729_140936_P20240731_202434_predictions.mat'; % okay
+% Preds_file = './PINNs/Ryder_test_I20240729_140936_P20240801_175339/Ryder_test_I20240729_140936_P20240801_175339_predictions.mat'; % short run
+Preds_file = './PINNs/Ryder_test_I21-Nov-2024_15-49-30mat_P21-Nov-24_16-19-28/Ryder_test_I21-Nov-2024_15-49-30mat_P21-Nov-24_16-19-28_predictions.mat';
+
+load(Preds_file)
+
+x_pred = unique(X_nn(:,1))';
+y_pred = unique(X_nn(:,2));
+
+u_pred = reshape(sol_pred(:,1), [200, 200])';
+v_pred = reshape(sol_pred(:,2), [200, 200])';
+s_pred = reshape(sol_pred(:,3), [200, 200])';
+H_pred = reshape(sol_pred(:,4), [200, 200])';
+C_pred = reshape(sol_pred(:,4), [200, 200])';
+
+yts = 60*60*24*365.25; 
+
+pinn.model_data.vx = InterpFromGridToMesh(x_pred,y_pred,u_pred,md.mesh.x,md.mesh.y,0) * yts;
+pinn.model_data.vy = InterpFromGridToMesh(x_pred,y_pred,v_pred,md.mesh.x,md.mesh.y,0) * yts;
+pinn.model_data.s = InterpFromGridToMesh(x_pred,y_pred,s_pred,md.mesh.x,md.mesh.y,0);
+pinn.model_data.H = InterpFromGridToMesh(x_pred,y_pred,H_pred,md.mesh.x,md.mesh.y,0);
+pinn.model_data.C = InterpFromGridToMesh(x_pred,y_pred,C_pred,md.mesh.x,md.mesh.y,0);
+
+% md.mesh = mesh2d(md.mesh);
+% Trying to plot PINNICLE results
+
+f2 = figure;
+plotmodel(md,'unit#all','km','axis#all','image','xticklabel#all',[], 'yticklabel#all',[],'fontsize#all',24,'fontweight#all','b',...
+	'data', sqrt(md.initialization.vx.^2 + md.initialization.vy.^2), 'title', 'velocity','colorbartitle#1','m/yr','log#1',10,...
+	'caxis#1',[1 100], 'colormap#1', 'cool','ylabel#1', 'reference', ...
+	'data', md.geometry.surface, 'title', 'surf. elev.','colorbartitle#2','m',...
+	'caxis#2',[1200 2200],'colormap#2',demcmap(md.geometry.surface),...
+	'data', md.results.StressbalanceSolution.FrictionCoefficient,'title', 'basal friction coefficient',...
+	'caxis#3', [40 200], 'colormap#3','parula',...
+	'data', md.geometry.thickness, 'title', 'thickness', 'colorbartitle#4', 'm',...
+	'caxis#4', [600 2400],...
+	'data', sqrt(pinn.model_data.vx.^2 + pinn.model_data.vy.^2), 'ylabel#5','prediction',...
+	'colormap#5', 'cool',...
+	'data', pinn.model_data.s, ...
+	'caxis#6',[1200 2200],'colormap#6',demcmap(md.geometry.surface),...
+	'data', pinn.model_data.C, 'colorbartitle#7','Pa^1^/^2 m^−^1^/^6 s^1^/^6',...
+	'colormap#7','parula',...
+	'data', pinn.model_data.H, ...
+	'caxis#8', [600 2400],...
+	'data', sqrt(pinn.model_data.vx.^2 + pinn.model_data.vy.^2) - sqrt(md.inversion.vx_obs.^2 + md.inversion.vy_obs.^2), 'ylabel#9','difference',...
+	'data', pinn.model_data.s - md.geometry.surface, ...
+	'data', pinn.model_data.C - md.results.StressbalanceSolution.FrictionCoefficient,...
+	'data', pinn.model_data.H - md.geometry.thickness, ...
+	'colormap#9-12','redblue','figure', f2)
+
+set(f2, 'name', Preds_file)
+
+%}

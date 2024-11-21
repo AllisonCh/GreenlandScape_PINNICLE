@@ -1,0 +1,120 @@
+%Name and Coordinate system
+md.miscellaneous.name='Greenlandscape';
+md.mesh.epsg=3413;
+
+Path2data= '/Users/achartra/Library/CloudStorage/OneDrive-NASA/Greenland-scape/Data/';
+
+disp('   Loading BedMachine v5 data from NetCDF');
+ncdata= strcat(Path2data,'BedMachineGreenland-v5.nc');
+x1    = double(ncread(ncdata,'x'))';
+y1    = double(flipud(ncread(ncdata,'y')));
+topg  = single(rot90(ncread(ncdata, 'bed')));
+thck  = single(rot90(ncread(ncdata, 'thickness')));
+
+disp('   Loading GrIMP data from geotiff');
+usrf		= readgeoraster(strcat(Path2data, 'GrIS_GrIMP_SurfElev_elev_surf_filt_150m.tif')); % surface elevation from a filtered, QGIS-resampled GeoTIFF of the original 30-m tiles, m
+usrf		= flipud(usrf);
+
+disp('   Loading velocity data from geotiff');
+[velx, R]	= readgeoraster(strcat(Path2data,'GrIS_Meas_AvgSurfVel_speed_x_filt_150m.tif'));
+vely		= readgeoraster(strcat(Path2data,'GrIS_Meas_AvgSurfVel_speed_y_filt_150m.tif'));
+vel		= readgeoraster(strcat(Path2data,'GrIS_Meas_AvgSurfVel_speed_filt_150m.tif'));
+velx	= flipud(velx);
+vely	= flipud(vely);
+vel		= flipud(vel);
+
+BM5_proj = R.ProjectedCRS;
+wgs84   = wgs84Ellipsoid('m');
+[x2, y2] = meshgrid(x1(1:10:end), y1(1:10:end));
+
+disp('   Loading SeaRISE data from NetCDF');
+ncdata= strcat(Path2data,'Greenland_5km_dev1.2.nc');
+lat = ncread(ncdata,'lat')';
+lon = ncread(ncdata,'lon')';
+[x_tmp, y_tmp] = projfwd(BM5_proj, double(lat), double(lon));
+temp  = ncread(ncdata,'airtemp2m')';
+smb   = ncread(ncdata,'smb')';
+gflux = ncread(ncdata,'bheatflx')';
+F = scatteredInterpolant(x_tmp(:), y_tmp(:), double(temp(:)), 'natural', 'none');
+temp_new = F(x2, y2);
+F = scatteredInterpolant(x_tmp(:), y_tmp(:), double(smb(:)), 'natural','none');
+smb_new = F(x2, y2);
+F = scatteredInterpolant(x_tmp(:), y_tmp(:), double(gflux(:)), 'natural','none');
+gflux_new = F(x2, y2);
+
+x2 = x2(1,:);
+y2 = y2(:,1);
+
+disp('   Loading MAR data from .mat');
+mardata = strcat(Path2data, 'mar_311_Avg.mat');
+load(mardata, 'x', 'y', 'SMB_mean', 'ST2_mean')
+SMB		= SMB_mean .* 365.25 .* (1/1000); % Convert from mm/day to m/year
+x = 1e3 .* x;
+y = 1e3 .* y;
+
+disp('   Interpolating surface and bedrock');
+md.geometry.base     = InterpFromGridToMesh(x1,y1,topg,md.mesh.x,md.mesh.y,0);
+md.geometry.surface = InterpFromGridToMesh(x1,y1,usrf,md.mesh.x,md.mesh.y,0);
+
+disp('   Constructing thickness');
+md.geometry.thickness = md.geometry.surface - md.geometry.base;
+%Set min thickness to 1 meter
+pos0=find(md.geometry.thickness<=0);
+md.geometry.thickness(pos0)=1;
+md.geometry.surface=md.geometry.thickness+md.geometry.base;
+md.geometry.thickness = md.geometry.surface - md.geometry.base;
+
+disp('   Interpolating velocities ');
+md.inversion.vx_obs  = InterpFromGridToMesh(x1,y1,velx,md.mesh.x,md.mesh.y,0);
+md.inversion.vy_obs  = InterpFromGridToMesh(x1,y1,vely,md.mesh.x,md.mesh.y,0);
+md.inversion.vel_obs = InterpFromGridToMesh(x1,y1,vel,md.mesh.x,md.mesh.y,0);
+md.initialization.vx = md.inversion.vx_obs;
+md.initialization.vy = md.inversion.vy_obs;
+md.initialization.vz = zeros(md.mesh.numberofvertices,1);
+md.initialization.vel= md.inversion.vel_obs;
+
+disp('   Interpolating temperatures');
+%md.initialization.temperature=InterpFromGridToMesh(x2,y2,temp_new,md.mesh.x,md.mesh.y,0)+273.15; % SeaRISE
+md.initialization.temperature=InterpFromGridToMesh(x(1,:),y(:,1),mean(ST2_mean,3,'omitnan'),md.mesh.x,md.mesh.y,0)+273.15; % MAR
+
+disp('   Interpolating surface mass balance');
+%md.smb.mass_balance=InterpFromGridToMesh(x2,y2,smb_new,md.mesh.x,md.mesh.y,0); % SeaRISE
+md.smb.mass_balance=InterpFromGridToMesh(x(1,:),y(:,1),SMB,md.mesh.x,md.mesh.y,0); % MAR
+md.smb.mass_balance=md.smb.mass_balance*md.materials.rho_water/md.materials.rho_ice;
+
+disp('   Construct basal friction parameters');
+md.friction.coefficient=30*ones(md.mesh.numberofvertices,1);
+pos=find(md.mask.ocean_levelset<0);
+md.friction.coefficient(pos)=0; %no friction applied on floating ice
+md.friction.p=ones(md.mesh.numberofelements,1);
+md.friction.q=ones(md.mesh.numberofelements,1);
+
+disp('   Construct ice rheological properties');
+md.materials.rheology_n=3*ones(md.mesh.numberofelements,1);
+md.materials.rheology_B=paterson(md.initialization.temperature);
+md.friction.q=ones(md.mesh.numberofelements,1);
+md.friction.p=ones(md.mesh.numberofelements,1);
+
+disp('   Set other boundary conditions');
+md.mask.ice_levelset(md.mesh.vertexonboundary==1)=0;
+md.basalforcings.floatingice_melting_rate = zeros(md.mesh.numberofvertices,1);
+md.basalforcings.groundedice_melting_rate = zeros(md.mesh.numberofvertices,1);
+md.thermal.spctemperature     = [md.initialization.temperature;1]; %impose observed temperature on surface
+md.masstransport.spcthickness    = NaN*ones(md.mesh.numberofvertices,1);
+
+disp('   Set geothermal heat flux');
+md.basalforcings.geothermalflux=InterpFromGridToMesh(x2,y2,gflux_new,md.mesh.x,md.mesh.y,0);
+
+disp('   Set Pressure');
+md.initialization.pressure=md.materials.rho_ice*md.constants.g*md.geometry.thickness;
+
+disp('   Single point constraints');
+%Initialize single point constraint arrays
+md.stressbalance.referential=NaN*ones(md.mesh.numberofvertices,6);
+md.stressbalance.spcvx = NaN*ones(md.mesh.numberofvertices,1);
+md.stressbalance.spcvy = NaN*ones(md.mesh.numberofvertices,1);
+md.stressbalance.spcvz = NaN*ones(md.mesh.numberofvertices,1);
+md.stressbalance.spcvx_base = NaN*ones(md.mesh.numberofvertices,1);
+md.stressbalance.spcvy_base = NaN*ones(md.mesh.numberofvertices,1);
+md.stressbalance.spcvx_shear = NaN*ones(md.mesh.numberofvertices,1);
+md.stressbalance.spcvy_shear = NaN*ones(md.mesh.numberofvertices,1);
