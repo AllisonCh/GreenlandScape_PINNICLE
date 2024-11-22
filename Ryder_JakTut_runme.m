@@ -37,6 +37,12 @@ Ly							= Tile_ymax - Tile_ymin;
 nx							= Lx / Res;
 ny							= Ly / Res;
 end
+
+FrictionLaw					= 'Weertman';
+Friction_guess				= 3e3;
+cost_fns					= [101 103];
+cost_fns_coeffs				= [40, 1];
+
 %%
 if any(steps==1) 
 	disp('   Step 1: Mesh creation');
@@ -84,8 +90,6 @@ if any(steps==1)
 	H							= single(rot90(ncread(ncdata, 'thickness'))); %(thk)
 
 	disp('   Loading GrIMP data from geotiff');
-	% load('/Users/achartra/Library/CloudStorage/OneDrive-NASA/Greenland-scape/Quad_A_newfilter.mat');
-	% h							= DEM_block.elev_surf_filt;
 	h							= readgeoraster(strcat(Path2dataGS, 'GrIMP_30m_merged_filtered_150m.tif')); % surface elevation from a filtered, QGIS-resampled GeoTIFF of the original 30-m tiles, m
 	h							= flipud(h);
 	
@@ -93,7 +97,6 @@ if any(steps==1)
 	md.geometry.base = InterpFromGridToMesh(x1,y1,bed,md.mesh.x,md.mesh.y,0);
 
 	disp('	Interpolating surface elevation');
-	% md.geometry.surface			= InterpFromGridToMesh(BM5_block.x, BM5_block.y, h, md.mesh.x, md.mesh.y, 0);
 	md.geometry.surface			= InterpFromGridToMesh(x1, y1, h, md.mesh.x, md.mesh.y, 0);
 
 	disp('   Loading velocity data from geotiff');
@@ -148,23 +151,26 @@ if any(steps==2)
 	% Deal with boundary conditions
 	disp('   Set other boundary conditions');
 	% md							= SetMarineIceSheetBC(md,'./Front.exp');
-	md							= SetIceSheetBC(md);
+	md								= SetIceSheetBC(md);
 	md.basalforcings.floatingice_melting_rate = zeros(md.mesh.numberofvertices,1);
 	md.basalforcings.groundedice_melting_rate = zeros(md.mesh.numberofvertices,1);
 
 	% Set basal friction coefficient guess - frictionwaterlayer
 	disp('   Construct basal friction parameters');
-	% md.friction.coefficient		= 1e2 *ones(md.mesh.numberofvertices,1);
-	% md.friction.coefficient(find(md.mask.ocean_levelset<0.)) = 0.;
-	% md.friction.p				= ones(md.mesh.numberofelements,1);
-	% md.friction.q				= ones(md.mesh.numberofelements,1);
-	% 
 	disp('   Initial basal friction ');
-	Wm							= 3; % m for Weertman friction law
-	md.friction					= frictionweertman(); % Set friction law
-	md.friction.m				= Wm .* ones(md.mesh.numberofelements, 1); % Set m exponent
-	md.friction.C				= 2000 .*ones(md.mesh.numberofvertices, 1); % set reference friction coefficient
+	if strcmp(FrictionLaw,'waterlayer')
+		md.friction.coefficient		= Friction_guess * ones(md.mesh.numberofvertices,1);
+		md.friction.coefficient(find(md.mask.ocean_levelset<0.)) = 0.;
+		md.friction.p				= ones(md.mesh.numberofelements,1);
+		md.friction.q				= ones(md.mesh.numberofelements,1);
+	elseif strcmp(FrictionLaw,'Weertman')
+		%
 
+		Wm							= 3; % m for Weertman friction law
+		md.friction					= frictionweertman(); % Set friction law
+		md.friction.m				= Wm .* ones(md.mesh.numberofelements, 1); % Set m exponent
+		md.friction.C				= Friction_guess .*ones(md.mesh.numberofvertices, 1); % set reference friction coefficient
+	end
 	% md=parameterize(md,'Ryd.par');
 
 	% save RydPar md
@@ -174,20 +180,21 @@ if any(steps==3)
 	disp('   Step 3: Control method friction');
 	% md=loadmodel('RydPar');
 
-	md=setflowequation(md,'SSA','all');
+	md								= setflowequation(md,'SSA','all');
 
 	%Control general
-	md.inversion.iscontrol=1;
-	md.inversion.nsteps= 130;
-	md.inversion.step_threshold=0.99*ones(md.inversion.nsteps,1);
-	md.inversion.maxiter_per_step=5*ones(md.inversion.nsteps,1);
-	md.verbose=verbose('solution',true,'control',true);
+	md.inversion.iscontrol			= 1;
+	md.inversion.nsteps				= 130;
+	md.inversion.step_threshold		= 0.99*ones(md.inversion.nsteps,1);
+	md.inversion.maxiter_per_step	= 5*ones(md.inversion.nsteps,1);
+	md.verbose						= verbose('solution',true,'control',true);
 
 	%Cost functions
-	md.inversion.cost_functions=[101 103];
-	md.inversion.cost_functions_coefficients=ones(md.mesh.numberofvertices,2);
-	md.inversion.cost_functions_coefficients(:,1)=40;
-	md.inversion.cost_functions_coefficients(:,2)=1;
+	md.inversion.cost_functions							= cost_fns;
+	md.inversion.cost_functions_coefficients			= ones(md.mesh.numberofvertices,length(cost_fns));
+	for ii = 1:length(cost_fns)
+		md.inversion.cost_functions_coefficients(:,1)	= cost_fns_coeffs(ii);
+	end
 
 	% %Cost functions
 	% md.inversion.cost_functions...
@@ -205,22 +212,40 @@ if any(steps==3)
 	% 	= 0; % Set coefficients to cost functions 101 and 103 to zero where the ice mask is >0
 
 	%Controls
-	md.inversion.control_parameters={'FrictionC'};
-	md.inversion.gradient_scaling(1:md.inversion.nsteps)=30;
-	md.inversion.min_parameters= 1e-2 .* ones(md.mesh.numberofvertices,1);
-	md.inversion.max_parameters= 5e4 .* ones(md.mesh.numberofvertices,1);
+	if strcmp(FrictionLaw,'waterlayer')
+		md.inverson.control_parameters	= {'FrictionCoefficient'};
+	elseif strcmp(FrictionLaw,'Weertman')
+		md.inversion.control_parameters	= {'FrictionC'};
+	end
+	
+	md.inversion.gradient_scaling(1:md.inversion.nsteps)	= 30;
+	md.inversion.min_parameters								= 1e-2 .* ones(md.mesh.numberofvertices,1);
+	md.inversion.max_parameters								= 5e4 .* ones(md.mesh.numberofvertices,1);
 
 	%Additional parameters
-	md.stressbalance.restol=0.01;
-	md.stressbalance.reltol=0.1;
-	md.stressbalance.abstol=NaN;
+	md.stressbalance.restol			= 0.01;
+	md.stressbalance.reltol			= 0.1;
+	md.stressbalance.abstol			= NaN;
 
 	%Go solve
-	md.cluster=generic('name',oshostname,'np',4);
-	md=solve(md,'Stressbalance');
+	md.cluster						= generic('name',oshostname,'np',4);
+	md								= solve(md,'Stressbalance');
 
 	% save RydControl md
+
+	% save in PINNICLE-friendly format
+	warning off MATLAB:structOnObject
+	md.friction						= struct(md.friction);
+	warning on MATLAB:structOnObject
+	if isfield(md.results.StressbalanceSolution,'FrictionC')
+		md.friction.C_guess			= md.friction.C;
+		md.friction.C				= md.results.StressbalanceSolution.FrictionC;
+	else
+		md.friction.C_guess			= md.friction.coefficient;
+		md.friction.C				= md.results.StressbalanceSolution.FrictionCoefficient;
+	end
 end 
+
 
 
 if any(steps==4) 
@@ -234,7 +259,7 @@ if any(steps==4)
 		'colorbar#1','off','colorbartitle#2','(m/yr)',...
 		'caxis#1',[0,150],...
 		'data',md.geometry.base,'title','Base elevation',...
-		'data',md.results.StressbalanceSolution.FrictionC,...
+		'data',md.friction.C,...
 		'title','Friction Coefficient',...
 		'colorbartitle#3','(m)', 'figure', f1);
 
@@ -242,61 +267,59 @@ if any(steps==4)
 		'data', md.initialization.vx, 'title', 'u','colorbartitle#1','m/yr',...
 		'data', md.initialization.vy, 'title', 'v','colorbartitle#2','m/yr',...
 		'data', md.geometry.surface, 'title', 'surface elev.','colorbartitle#3','m',...
-		'data', md.friction.C,'title','Friction Coefficient',...
+		'data', md.friction.C_guess,'title','Friction Coefficient',...
 		'colormap#1-2', cmocean('thermal'),'colormap#3',demcmap(md.geometry.surface), 'figure', f1)
 
 end 
 
 
 % save
-if isfield(md.results.StressbalanceSolution,'FrictionC')
-	md.friction.C_guess = md.friction.C;
-	md.friction.C = md.results.StressbalanceSolution.FrictionC;
-else
-	md.friction.C_guess = md.friction.coefficient;
-	md.friction.C = md.results.StressbalanceSolution.FrictionCoefficient;
+
+if any(steps == 5)
+	disp('	Saving')
+	save(mdSaveName, 'md')
+	saveasstruct(md, strcat(structSaveName, '.mat'));
 end
-save(mdSaveName, 'md')
-saveasstruct(md, strcat(structSaveName, '.mat'));
+
 
 %% Plotting - Weertman friction
-
-	f1 = figure; plotmodel(md,'unit#all','km','axis#all','equal',...
-		'data',md.inversion.vel_obs,'title','Observed velocity',...
-		'data',md.results.StressbalanceSolution.Vel,'title','Modeled Velocity',...
-		'colorbar#1','off','colorbartitle#2','(m/yr)',...
-		'caxis#1',[0,150],...
-		'data',md.geometry.base,'title','Base elevation',...
-		'data',md.results.StressbalanceSolution.FrictionC,...
-		'title','Friction Coefficient',...
-		'colorbartitle#3','(m)', 'figure', f1);
-
-	f1 = figure; plotmodel(md,'unit#all','km','axis#all','image',...
-		'data', md.initialization.vx, 'title', 'u','colorbartitle#1','m/yr',...
-		'data', md.initialization.vy, 'title', 'v','colorbartitle#2','m/yr',...
-		'data', md.geometry.surface, 'title', 'surface elev.','colorbartitle#3','m',...
-		'data', md.friction.C,'title','Friction Coefficient',...
-		'colormap#1-2', cmocean('thermal'),'colormap#3',demcmap(md.geometry.surface), 'figure', f1)
-
-
-%% Plotting - water layer friction
-
-	f1 = figure; plotmodel(md,'unit#all','km','axis#all','equal',...
-		'data',md.inversion.vel_obs,'title','Observed velocity',...
-		'data',md.results.StressbalanceSolution.Vel,'title','Modeled Velocity',...
-		'colorbar#1','off','colorbartitle#2','(m/yr)',...
-		'caxis#1',[0,150],...
-		'data',md.geometry.base,'title','Base elevation',...
-		'data',md.results.StressbalanceSolution.FrictionCoefficient,...
-		'title','Friction Coefficient',...
-		'colorbartitle#3','(m)', 'figure', f1);
-
-	f1 = figure; plotmodel(md,'unit#all','km','axis#all','image',...
-		'data', md.initialization.vx, 'title', 'u','colorbartitle#1','m/yr',...
-		'data', md.initialization.vy, 'title', 'v','colorbartitle#2','m/yr',...
-		'data', md.geometry.surface, 'title', 'surface elev.','colorbartitle#3','m',...
-		'data', md.friction.coefficient,'title','Friction Coefficient',...
-		'colormap#1-2', cmocean('thermal'),'colormap#3',demcmap(md.geometry.surface), 'figure', f1)
+% 
+% 	f1 = figure; plotmodel(md,'unit#all','km','axis#all','equal',...
+% 		'data',md.inversion.vel_obs,'title','Observed velocity',...
+% 		'data',md.results.StressbalanceSolution.Vel,'title','Modeled Velocity',...
+% 		'colorbar#1','off','colorbartitle#2','(m/yr)',...
+% 		'caxis#1',[0,150],...
+% 		'data',md.geometry.base,'title','Base elevation',...
+% 		'data',md.results.StressbalanceSolution.FrictionC,...
+% 		'title','Friction Coefficient',...
+% 		'colorbartitle#3','(m)', 'figure', f1);
+% 
+% 	f1 = figure; plotmodel(md,'unit#all','km','axis#all','image',...
+% 		'data', md.initialization.vx, 'title', 'u','colorbartitle#1','m/yr',...
+% 		'data', md.initialization.vy, 'title', 'v','colorbartitle#2','m/yr',...
+% 		'data', md.geometry.surface, 'title', 'surface elev.','colorbartitle#3','m',...
+% 		'data', md.friction.C,'title','Friction Coefficient',...
+% 		'colormap#1-2', cmocean('thermal'),'colormap#3',demcmap(md.geometry.surface), 'figure', f1)
+% 
+% 
+% %% Plotting - water layer friction
+% 
+% 	f1 = figure; plotmodel(md,'unit#all','km','axis#all','equal',...
+% 		'data',md.inversion.vel_obs,'title','Observed velocity',...
+% 		'data',md.results.StressbalanceSolution.Vel,'title','Modeled Velocity',...
+% 		'colorbar#1','off','colorbartitle#2','(m/yr)',...
+% 		'caxis#1',[0,150],...
+% 		'data',md.geometry.base,'title','Base elevation',...
+% 		'data',md.results.StressbalanceSolution.FrictionCoefficient,...
+% 		'title','Friction Coefficient',...
+% 		'colorbartitle#3','(m)', 'figure', f1);
+% 
+% 	f1 = figure; plotmodel(md,'unit#all','km','axis#all','image',...
+% 		'data', md.initialization.vx, 'title', 'u','colorbartitle#1','m/yr',...
+% 		'data', md.initialization.vy, 'title', 'v','colorbartitle#2','m/yr',...
+% 		'data', md.geometry.surface, 'title', 'surface elev.','colorbartitle#3','m',...
+% 		'data', md.friction.coefficient,'title','Friction Coefficient',...
+% 		'colormap#1-2', cmocean('thermal'),'colormap#3',demcmap(md.geometry.surface), 'figure', f1)
 %% Trying to work with PINNICLE outputs
 %{
 % Load ISSM data
