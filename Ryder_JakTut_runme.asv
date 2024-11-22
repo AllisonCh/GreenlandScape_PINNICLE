@@ -11,7 +11,7 @@ Path2dataGS					= '/Users/achartra/Library/CloudStorage/OneDrive-NASA/Greenland-
 
 
 Now							= datetime;
-Now.Format					= "yyyyMMdd_HHmmss";
+Now.Format					= 'dd-MMM-uuuu_HH-mm-ss';
 structSaveName				= strcat('./Models/Ryder_test_I', char(Now));
 mdSaveName					= strcat('./Models/Ryder_test.', char(Now));
 % Get tile boundaries
@@ -51,9 +51,9 @@ if any(steps==1)
 	y1							= double(flipud(ncread(ncdata,'y')));
 
 	disp('   Loading velocity data from geotiff');
-	[velx, R]					= readgeoraster(strcat(Path2data,'GrIS_Meas_AvgSurfVel_speed_x_filt_150m.tif'));
-	vely						= readgeoraster(strcat(Path2data,'GrIS_Meas_AvgSurfVel_speed_y_filt_150m.tif'));
-	vel							= readgeoraster(strcat(Path2data,'GrIS_Meas_AvgSurfVel_speed_filt_150m.tif'));
+	[velx, R]					= readgeoraster(strcat(Path2dataGS,'AMC_test/GrIS_Meas_250m_AvgSurfVel_speed_x_filt_150m.tif'));
+	vely						= readgeoraster(strcat(Path2dataGS,'AMC_test/GrIS_Meas_250m_AvgSurfVel_speed_y_filt_150m.tif'));
+	vel							= readgeoraster(strcat(Path2dataGS,'AMC_test/GrIS_Meas_250m_AvgSurfVel_speed_filt_150m.tif'));
 	velx						= flipud(velx);
 	vely						= flipud(vely);
 	vel							= flipud(vel);
@@ -67,7 +67,7 @@ end
 
 if any(steps==1) 
 	disp('   Step 2: Parameterization');
-	md						= loadmodel('RydMesh');
+	% md						= loadmodel('RydMesh');
 
 	md						= setmask(md,'','');
 
@@ -86,7 +86,7 @@ if any(steps==1)
 	disp('   Loading GrIMP data from geotiff');
 	% load('/Users/achartra/Library/CloudStorage/OneDrive-NASA/Greenland-scape/Quad_A_newfilter.mat');
 	% h							= DEM_block.elev_surf_filt;
-	h							= readgeoraster(strcat(Path2data, 'GrIS_GrIMP_SurfElev_elev_surf_filt_150m.tif')); % surface elevation from a filtered, QGIS-resampled GeoTIFF of the original 30-m tiles, m
+	h							= readgeoraster(strcat(Path2dataGS, 'GrIMP_30m_merged_filtered_150m.tif')); % surface elevation from a filtered, QGIS-resampled GeoTIFF of the original 30-m tiles, m
 	h							= flipud(h);
 	
 	disp('   Interpolating bedrock topography');
@@ -97,11 +97,11 @@ if any(steps==1)
 	md.geometry.surface			= InterpFromGridToMesh(x1, y1, h, md.mesh.x, md.mesh.y, 0);
 
 	disp('   Loading velocity data from geotiff');
-	[velx, R]					= readgeoraster(strcat(Path2data,'GrIS_Meas_AvgSurfVel_speed_x_filt_150m.tif'));
+	[velx, R]					= readgeoraster(strcat(Path2dataGS,'AMC_test/GrIS_Meas_250m_AvgSurfVel_speed_x_filt_150m.tif'));
+	vely						= readgeoraster(strcat(Path2dataGS,'AMC_test/GrIS_Meas_250m_AvgSurfVel_speed_y_filt_150m.tif'));
+	vel							= readgeoraster(strcat(Path2dataGS,'AMC_test/GrIS_Meas_250m_AvgSurfVel_speed_filt_150m.tif'));
 	velx						= flipud(velx);
-	vely						= readgeoraster(strcat(Path2data,'GrIS_Meas_AvgSurfVel_speed_y_filt_150m.tif'));
 	vely						= flipud(vely);
-	vel							= readgeoraster(strcat(Path2data,'GrIS_Meas_AvgSurfVel_speed_filt_150m.tif'));
 	vel							= flipud(vel);
 	
 	disp('   Interpolating velocities');
@@ -114,7 +114,7 @@ if any(steps==1)
 
 	% Get climate data from MAR
 	disp('	Loading climate data from MAR')
-	MAR							= load(strcat(Path2data,'mar_311_Avg.mat'));
+	MAR							= load(strcat(Path2dataGS,'mar_311_Avg.mat'));
 	temp						= MAR.TT_mean;
 	smb							= MAR.SMB_mean * md.materials.rho_water ./md.materials.rho_ice * 365.25 / 1000; % convert mm WE day-1 to m yr-1
 
@@ -163,16 +163,16 @@ if any(steps==2)
 	Wm							= 3; % m for Weertman friction law
 	md.friction					= frictionweertman(); % Set friction law
 	md.friction.m				= Wm .* ones(md.mesh.numberofelements, 1); % Set m exponent
-	md.friction.C				= 200 .*ones(md.mesh.numberofvertices, 1); % set reference friction coefficient
+	md.friction.C				= 2000 .*ones(md.mesh.numberofvertices, 1); % set reference friction coefficient
 
 	% md=parameterize(md,'Ryd.par');
 
-	save RydPar md
+	% save RydPar md
 end 
 
 if any(steps==3) 
 	disp('   Step 3: Control method friction');
-	md=loadmodel('RydPar');
+	% md=loadmodel('RydPar');
 
 	md=setflowequation(md,'SSA','all');
 
@@ -219,12 +219,14 @@ if any(steps==3)
 	md.cluster=generic('name',oshostname,'np',4);
 	md=solve(md,'Stressbalance');
 
-	save RydControl md
+	% save RydControl md
 end 
 
+
 if any(steps==4) 
+
 	disp('   Plotting')
-	md=loadmodel('RydControl');
+	% md=loadmodel('RydControl');
 
 	f1 = figure; plotmodel(md,'unit#all','km','axis#all','equal',...
 		'data',md.inversion.vel_obs,'title','Observed velocity',...
@@ -240,16 +242,37 @@ if any(steps==4)
 		'data', md.initialization.vx, 'title', 'u','colorbartitle#1','m/yr',...
 		'data', md.initialization.vy, 'title', 'v','colorbartitle#2','m/yr',...
 		'data', md.geometry.surface, 'title', 'surface elev.','colorbartitle#3','m',...
-		'data', md.results.StressbalanceSolution.FrictionC,'title','Friction Coefficient',...
+		'data', md.friction.C,'title','Friction Coefficient',...
 		'colormap#1-2', cmocean('thermal'),'colormap#3',demcmap(md.geometry.surface), 'figure', f1)
+
 end 
 % 
-% save(mdSaveName, 'md')
-% saveasstruct(md, strcat(structSaveName, '.mat'));
+save(mdSaveName, 'md')
+saveasstruct(md, strcat(structSaveName, '.mat'));
+
+%% Plotting - water layer friction
+
+	f1 = figure; plotmodel(md,'unit#all','km','axis#all','equal',...
+		'data',md.inversion.vel_obs,'title','Observed velocity',...
+		'data',md.results.StressbalanceSolution.Vel,'title','Modeled Velocity',...
+		'colorbar#1','off','colorbartitle#2','(m/yr)',...
+		'caxis#1',[0,150],...
+		'data',md.geometry.base,'title','Base elevation',...
+		'data',md.results.StressbalanceSolution.FrictionC,...
+		'title','Friction Coefficient',...
+		'colorbartitle#3','(m)', 'figure', f1);
+
+	f1 = figure; plotmodel(md,'unit#all','km','axis#all','image',...
+		'data', md.initialization.vx, 'title', 'u','colorbartitle#1','m/yr',...
+		'data', md.initialization.vy, 'title', 'v','colorbartitle#2','m/yr',...
+		'data', md.geometry.surface, 'title', 'surface elev.','colorbartitle#3','m',...
+		'data', md.friction.C,'title','Friction Coefficient',...
+		'colormap#1-2', cmocean('thermal'),'colormap#3',demcmap(md.geometry.surface), 'figure', f1)
 
 
+	
 %% Trying to work with PINNICLE outputs
-
+%{
 % Load ISSM data
 load('/Users/achartra/Library/CloudStorage/OneDrive-NASA/Greenland-scape/GreenlandScape_PINNICLE/Models/Ryder_test_I21-Nov-2024_15-49-30mat.mat')
 
