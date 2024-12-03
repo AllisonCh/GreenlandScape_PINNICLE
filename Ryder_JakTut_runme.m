@@ -1,7 +1,7 @@
 % Test case for PINNICLE at the Onset of Ryder Glacier (Tile 32_09)
 % Gathering data into ISSM struct and running inversion to obtain basal friction coefficient C
 % clear
-steps=[0:4];
+steps=[0:5];
 
 if any(steps == 0)
 ISSMpath					= issmdir();
@@ -9,14 +9,18 @@ Path2data					= '/Users/achartra/Library/CloudStorage/OneDrive-NASA/research/dat
 Path2dataJAM				= '/Users/achartra/Library/CloudStorage/OneDrive-NASA/Greenland-scape/Data/JAM/';
 Path2dataGS					= '/Users/achartra/Library/CloudStorage/OneDrive-NASA/Greenland-scape/Data/';
 
-
-Now							= datetime;
-Now.Format					= 'dd-MMM-uuuu_HH-mm-ss';
-structSaveName				= strcat('./Models/Ryder_test_I', char(Now));
-mdSaveName					= strcat('./Models/Ryder_test.', char(Now));
 % Get tile boundaries
-Tile						= '12_13'; % Ryder is 32_09
-Region						= 'Helheim';
+Tile						= '32_09'; % Ryder is 32_09
+Region						= 'Ryder';
+
+% Specify save names
+RunNum						= '2'; % CHANGE THIS EACH TIME!!!
+Now							= datetime;
+Now.Format					= 'dd-MMM-uuuu'; % 'dd-MMM-uuuu_HH-mm-ss';
+structSaveName				= strcat('./Models/',Region,'_test_I', char(Now),'_',RunNum);
+mdSaveName					= strcat('./Models/',Region,'_test.', char(Now),'_',RunNum);
+
+
 
 load(strcat(Path2dataGS,'GreenlandScape_Tiles.mat'))
 for ii = 1:length(Tiles)
@@ -31,7 +35,7 @@ Tile_ymax					= Tiles(Tile_idx).Y(2) * 1e3;
 Tile_XY_pos					= [Tile_xmin, Tile_ymin; Tile_xmax, Tile_ymin; Tile_xmax, Tile_ymax; Tile_xmin, Tile_ymax; Tile_xmin, Tile_ymin];
 
 % Define desired model domain
-Res							= 1.5e3;
+Res							= 5e2;
 Lx							= Tile_xmax - Tile_xmin;
 Ly							= Tile_ymax - Tile_ymin;
 nx							= Lx / Res;
@@ -39,12 +43,12 @@ ny							= Ly / Res;
 end
 
 FrictionLaw					= 'Weertman';
-Friction_guess				= 4e3;
+Friction_guess				= 3e3;
 cost_fns					= [101 103];
 cost_fns_coeffs				= [40, 1];
 
-nsteps						= 1000;
-maxiter_per_step			= 50;
+nsteps						= 60;
+maxiter_per_step			= 10;
 
 %%
 if any(steps==1) 
@@ -53,42 +57,25 @@ if any(steps==1)
 	md.mesh.x					= md.mesh.x + Tile_xmin;
 	md.mesh.y					= md.mesh.y + Tile_ymin;
 
-	%Get observed fields on mesh nodes
-	disp('   Loading BedMachine v5 data from NetCDF');
-	ncdata						= strcat(Path2data,'BedMachineGreenland-v5.nc');
-	x1							= double(ncread(ncdata,'x'))';
-	y1							= double(flipud(ncread(ncdata,'y')));
-
-	disp('   Loading velocity data from geotiff');
-	[velx, R]					= readgeoraster(strcat(Path2dataGS,'AMC_test/GrIS_Meas_250m_AvgSurfVel_speed_x_filt_150m.tif'));
-	vely						= readgeoraster(strcat(Path2dataGS,'AMC_test/GrIS_Meas_250m_AvgSurfVel_speed_y_filt_150m.tif'));
-	vel							= readgeoraster(strcat(Path2dataGS,'AMC_test/GrIS_Meas_250m_AvgSurfVel_speed_filt_150m.tif'));
-	velx						= flipud(velx);
-	vely						= flipud(vely);
-	vel							= flipud(vel);
-
-	vx		= InterpFromGridToMesh(x1,y1,velx,md.mesh.x,md.mesh.y,0);
-	vy		= InterpFromGridToMesh(x1,y1,vely,md.mesh.x,md.mesh.y,0);
-	vel		= InterpFromGridToMesh(x1,y1,vel,md.mesh.x,md.mesh.y,0);
-
-	save RydMesh md
+	save(strcat(Region,'Mesh'),'md')
 end 
+
 
 if any(steps==1) 
 	disp('   Step 2: Parameterization');
-	% md						= loadmodel('RydMesh');
+	md							= loadmodel(strcat(Region,'Mesh'));
 
-	md						= setmask(md,'','');
+	md							= setmask(md,'','');
 
 	% Name and Coordinate system
-	md.miscellaneous.name	= 'Ryder';
-	md.mesh.epsg			= 3413;
+	md.miscellaneous.name		= Region;
+	md.mesh.epsg				= 3413;
 
 	% Load rest of data
 	disp('	Loading mask')
-	Mask = readGeotiff(strcat(Path2dataGS,'GrIS_BM5_ice_sheet_mask_150m.tif'));
-	Mask.y = flipud(Mask.y(:));
-	mask_gris = flipud(Mask.z);
+	Mask						= readGeotiff(strcat(Path2dataGS,'GrIS_BM5_ice_sheet_mask_150m.tif'));
+	Mask.y						= flipud(Mask.y(:));
+	mask_gris					= flipud(Mask.z);
 
 
 	disp('   Loading BedMachine v5 data from NetCDF');
@@ -188,12 +175,12 @@ if any(steps==2)
 	end
 	% md=parameterize(md,'Ryd.par');
 
-	% save RydPar md
+	save(strcat(Region,'Par'),'md')
 end 
 
 if any(steps==3) 
 	disp('   Step 3: Control method friction');
-	% md=loadmodel('RydPar');
+	md=loadmodel(strcat(Region,'Par'));
 
 	md								= setflowequation(md,'SSA','all');
 
@@ -246,7 +233,7 @@ if any(steps==3)
 	md.cluster						= generic('name',oshostname,'np',4);
 	md								= solve(md,'Stressbalance');
 
-	% save RydControl md
+	save(strcat(Region,'Control'), 'md')
 
 	% save in PINNICLE-friendly format
 	warning off MATLAB:structOnObject
@@ -261,13 +248,19 @@ if any(steps==3)
 	end
 end 
 
+% save
 
+if any(steps == 4)
+	disp('	Saving')
+	save(mdSaveName, 'md')
+	saveasstruct(md, strcat(structSaveName, '.mat'));
+end
 
-if any(steps==4) 
+if any(steps==5) 
 
 	disp('   Plotting')
-	% md=loadmodel('RydControl');
-
+	md=loadmodel(mdSaveName);
+	% 
 	f1 = figure; plotmodel(md,'unit#all','km','axis#all','equal',...
 		'data',md.inversion.vel_obs,'title','Observed velocity',...
 		'data',md.results.StressbalanceSolution.Vel,'title','Modeled Velocity',...
@@ -279,22 +272,19 @@ if any(steps==4)
 		'colorbartitle#3','(m)', 'figure', f1);
 
 	f1 = figure; plotmodel(md,'unit#all','km','axis#all','image',...
-		'data', md.initialization.vx, 'title', 'u','colorbartitle#1','m/yr',...
-		'data', md.initialization.vy, 'title', 'v','colorbartitle#2','m/yr',...
+		'data', md.inversion.vx_obs, 'title', 'u','colorbartitle#1','m/yr',...
+		'data', md.inversion.vy_obs, 'title', 'v','colorbartitle#2','m/yr',...
 		'data', md.geometry.surface, 'title', 'surface elev.','colorbartitle#3','m',...
-		'data', md.friction.C_guess,'title','Friction Coefficient',...
+		'data', md.friction.C,'title','Friction Coefficient',...
+		'data', md.geometry.thickness, 'title', 'thickness',...
+		'data', md.smb.mass_balance, 'title', 'mass balance',...
+		'data', md.balancethickness.thickening_rate, 'title','thickening rate',...
 		'colormap#1-2', cmocean('thermal'),'colormap#3',demcmap(md.geometry.surface), 'figure', f1)
 
 end 
 
 
-% save
 
-if any(steps == 5)
-	disp('	Saving')
-	save(mdSaveName, 'md')
-	saveasstruct(md, strcat(structSaveName, '.mat'));
-end
 
 
 %% Plotting - Weertman friction
