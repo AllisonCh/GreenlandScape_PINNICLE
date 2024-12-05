@@ -35,7 +35,7 @@ Tile_ymax					= Tiles(Tile_idx).Y(2) * 1e3;
 Tile_XY_pos					= [Tile_xmin, Tile_ymin; Tile_xmax, Tile_ymin; Tile_xmax, Tile_ymax; Tile_xmin, Tile_ymax; Tile_xmin, Tile_ymin];
 
 % Define desired model domain
-Res							= 1.5e3;
+Res							= 5e2;
 Lx							= Tile_xmax - Tile_xmin;
 Ly							= Tile_ymax - Tile_ymin;
 nx							= Lx / Res;
@@ -47,8 +47,8 @@ Friction_guess				= 3e3;
 cost_fns					= [101 103];
 cost_fns_coeffs				= [40, 1];
 
-nsteps						= 100;
-maxiter_per_step			= 20;
+nsteps						= 60;
+maxiter_per_step			= 10;
 
 %%
 if any(steps==1) 
