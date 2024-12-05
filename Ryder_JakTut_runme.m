@@ -42,6 +42,8 @@ nx							= Lx / Res;
 ny							= Ly / Res;
 end
 
+flow_eq						= 'HO'; % 'SSA';
+
 FrictionLaw					= 'Weertman';
 Friction_guess				= 3e3;
 cost_fns					= [101 103];
@@ -159,9 +161,6 @@ if any(steps==2)
 	md.basalforcings.floatingice_melting_rate = zeros(md.mesh.numberofvertices,1);
 	md.basalforcings.groundedice_melting_rate = zeros(md.mesh.numberofvertices,1);
 
-	% Set basal friction coefficient guess - frictionwaterlayer
-	disp('   Construct basal friction parameters');
-	disp('   Initial basal friction ');
 	if strcmp(FrictionLaw,'waterlayer')
 		md.friction.coefficient		= Friction_guess * ones(md.mesh.numberofvertices,1);
 		md.friction.coefficient(find(md.mask.ocean_levelset<0.)) = 0.;
@@ -175,29 +174,55 @@ if any(steps==2)
 		md.friction.m				= Wm .* ones(md.mesh.numberofelements, 1); % Set m exponent
 		md.friction.C				= Friction_guess .*ones(md.mesh.numberofvertices, 1); % set reference friction coefficient
 	end
+
+	% Extrude if necessary
+	if strcmp(flow_eq, 'HO')
+		mds = extrude(md, 2, 1);
+		% plotmodel(md, 'data', 'mesh')
+		mds.basalforcings.groundedice_melting_rate = 0;
+
+
+		% Deal with boundary conditions:
+		disp('   Set Boundary conditions');
+		mds.stressbalance.spcvx		= NaN*ones(mds.mesh.numberofvertices,1); % x-axis velocity constraint (NaN means no constraint)
+		mds.stressbalance.spcvy		= NaN*ones(mds.mesh.numberofvertices,1); % y-axis velocity constraint (NaN means no constraint)
+		mds.stressbalance.spcvz		= NaN*ones(mds.mesh.numberofvertices,1); % z-axis velocity constraint (NaN means no constraint)
+		mds.stressbalance.referential= NaN*ones(mds.mesh.numberofvertices,6); % local referential - ?
+		mds.stressbalance.loadingforce = 0*ones(mds.mesh.numberofvertices,3); % ? set to zero
+		pos							= find((mds.mask.ice_levelset < 0) .* (mds.mesh.vertexonboundary)); % Find indices where ice mask is -1 and the vertex is on a boundary
+		mds.stressbalance.spcvx(pos) = mds.initialization.vx(pos); % Set the x-axis velocity constraint to the velocity on the boundary vertices
+		mds.stressbalance.spcvy(pos) = mds.initialization.vy(pos); % Set the y-axis velocity constraint to the velocity on the boundary vertices
+		mds.stressbalance.spcvz(pos) = 0;  % Set the z-axis velocity constraint to zero on the boundary vertices (no vertical component of velocity)
+		mds.stressbalance.spcvx_base = zeros(mds.mesh.numberofvertices,1);
+		mds.stressbalance.spcvy_base = zeros(mds.mesh.numberofvertices,1);
+	end
+	% Set basal friction coefficient guess - frictionwaterlayer
+	disp('   Construct basal friction parameters');
+	disp('   Initial basal friction ');
+
 	% md=parameterize(md,'Ryd.par');
 
-	save(strcat(Region,'Par'),'md')
+	save(strcat(Region,'Par'),'mds')
 end 
 
 if any(steps==3) 
 	disp('   Step 3: Control method friction');
-	md=loadmodel(strcat(Region,'Par'));
+	mds=loadmodel(strcat(Region,'Par'));
 
-	md								= setflowequation(md,'SSA','all');
+	mds								= setflowequation(mds,flow_eq,'all');
 
 	%Control general
-	md.inversion.iscontrol			= 1;
-	md.inversion.nsteps				= nsteps; 
-	md.inversion.step_threshold		= 0.99*ones(md.inversion.nsteps,1);
-	md.inversion.maxiter_per_step	= maxiter_per_step*ones(md.inversion.nsteps,1);
-	md.verbose						= verbose('solution',true,'control',true);
+	mds.inversion.iscontrol			= 1;
+	mds.inversion.nsteps				= nsteps; 
+	mds.inversion.step_threshold		= 0.99*ones(mds.inversion.nsteps,1);
+	mds.inversion.maxiter_per_step	= maxiter_per_step*ones(mds.inversion.nsteps,1);
+	mds.verbose						= verbose('solution',true,'control',true);
 
 	%Cost functions
-	md.inversion.cost_functions							= cost_fns;
-	md.inversion.cost_functions_coefficients			= ones(md.mesh.numberofvertices,length(cost_fns));
+	mds.inversion.cost_functions							= cost_fns;
+	mds.inversion.cost_functions_coefficients			= ones(mds.mesh.numberofvertices,length(cost_fns));
 	for ii = 1:length(cost_fns)
-		md.inversion.cost_functions_coefficients(:,1)	= cost_fns_coeffs(ii);
+		mds.inversion.cost_functions_coefficients(:,1)	= cost_fns_coeffs(ii);
 	end
 
 	% %Cost functions
@@ -217,59 +242,65 @@ if any(steps==3)
 
 	%Controls
 	if strcmp(FrictionLaw,'waterlayer')
-		md.inverson.control_parameters	= {'FrictionCoefficient'};
+		mds.inverson.control_parameters	= {'FrictionCoefficient'};
 	elseif strcmp(FrictionLaw,'Weertman')
-		md.inversion.control_parameters	= {'FrictionC'};
+		mds.inversion.control_parameters	= {'FrictionC'};
 	end
 	
-	md.inversion.gradient_scaling(1:md.inversion.nsteps)	= 30;
-	md.inversion.min_parameters								= 1e-2 .* ones(md.mesh.numberofvertices,1);
-	md.inversion.max_parameters								= 5e4 .* ones(md.mesh.numberofvertices,1);
+	mds.inversion.gradient_scaling(1:mds.inversion.nsteps)	= 30;
+	mds.inversion.min_parameters								= 1e-2 .* ones(mds.mesh.numberofvertices,1);
+	mds.inversion.max_parameters								= 5e4 .* ones(mds.mesh.numberofvertices,1);
 
 	%Additional parameters
-	md.stressbalance.restol			= 0.01;
-	md.stressbalance.reltol			= 0.1;
-	md.stressbalance.abstol			= NaN;
+	mds.stressbalance.restol			= 1e-5;
+	mds.stressbalance.reltol			= 0.1;
+	mds.stressbalance.abstol			= NaN;
 
 	%Go solve
-	md.cluster						= generic('name',oshostname,'np',4);
-	md								= solve(md,'Stressbalance');
+	mds.cluster						= generic('name',oshostname,'np',4);
+	mds								= solve(mds,'Stressbalance');
 
-	save(strcat(Region,'Control'), 'md')
+	save(strcat(Region,'Control'), 'mds')
 
 	% save in PINNICLE-friendly format
 	warning off MATLAB:structOnObject
 	md.friction						= struct(md.friction);
 	warning on MATLAB:structOnObject
-	if isfield(md.results.StressbalanceSolution,'FrictionC')
-		md.friction.C_guess			= md.friction.C;
-		md.friction.C				= md.results.StressbalanceSolution.FrictionC;
+
+if isfield(mds.results.StressbalanceSolution,'FrictionC')
+	md.friction.C_guess			= md.friction.C;
+	if strcmp(flow_eq, 'HO')
+		md.friction.C				= InterpFromModel3dToMesh2d(mds,mds.results.StressbalanceSolution.FrictionC, md.mesh.x, md.mesh.y,0,Friction_guess);
 	else
-		md.friction.C_guess			= md.friction.coefficient;
-		md.friction.C				= md.results.StressbalanceSolution.FrictionCoefficient;
+		md.friction.C				= mds.results.StressbalanceSolution.FrictionC;
 	end
+else
+	md.friction.C_guess			= md.friction.coefficient;
+	md.friction.C				= mds.results.StressbalanceSolution.FrictionCoefficient;
+end
+
 end 
 
 % save
 
-if any(steps == 4)
-	disp('	Saving')
-	save(mdSaveName, 'md')
-	saveasstruct(md, strcat(structSaveName, '.mat'));
-end
-
-if any(steps==5) 
+% if any(steps == 4)
+% 	disp('	Saving')
+% 	save(mdSaveName, 'mds')
+% 	saveasstruct(md, strcat(structSaveName, '.mat'));
+% end
+%%
+% if any(steps==5) 
 
 	disp('   Plotting')
-	md=loadmodel(mdSaveName);
+	% mds=loadmodel(mdSaveName);
 	% 
-	f1 = figure; plotmodel(md,'unit#all','km','axis#all','equal',...
-		'data',md.inversion.vel_obs,'title','Observed velocity',...
-		'data',md.results.StressbalanceSolution.Vel,'title','Modeled Velocity',...
+	f1 = figure; plotmodel(mds,'unit#all','km','axis#all','equal',...
+		'data',mds.inversion.vel_obs,'title','Observed velocity',...
+		'data',mds.results.StressbalanceSolution.Vel,'title','Modeled Velocity',...
 		'colorbar#1','off','colorbartitle#2','(m/yr)',...
 		'caxis#1',[0,150],...
-		'data',md.geometry.base,'title','Base elevation',...
-		'data',md.friction.C,...
+		'data',mds.geometry.base,'title','Base elevation',...
+		'data',mds.friction.C,...
 		'title','Friction Coefficient',...
 		'colorbartitle#3','(m)', 'figure', f1);
 
@@ -283,7 +314,7 @@ if any(steps==5)
 		'data', md.balancethickness.thickening_rate, 'title','thickening rate',...
 		'colormap#1-2', cmocean('thermal'),'colormap#3',demcmap(md.geometry.surface), 'figure', f1)
 
-end 
+% end 
 
 
 
