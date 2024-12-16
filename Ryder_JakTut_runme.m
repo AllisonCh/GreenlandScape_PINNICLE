@@ -358,3 +358,93 @@ end
 % 		'data', md.geometry.surface, 'title', 'surface elev.','colorbartitle#3','m',...
 % 		'data', md.friction.coefficient,'title','Friction Coefficient',...
 % 		'colormap#1-2', cmocean('thermal'),'colormap#3',demcmap(md.geometry.surface), 'figure', f1)
+
+
+%% Get xyz radar data
+
+OIB                         = load('/Users/achartra/Library/CloudStorage/OneDrive-NASA/Greenland-scape/Data/JAM/xyz_all.mat');
+
+% Get OIB flight lines within tile for minimization problem
+OIBf						= struct('campaign',[],'num_segment',[],'num_frame',[],'gd_segment',[],'x',[],'y',[],'elev_surf',[],'elev_bed',[]); % Set up struct for data within bounding box
+OIBf.gd_campaign			= []; % Set up variable to record campaigns with points in roi
+
+for ii = 1:OIB.num_campaign % Loop through campaigns
+    OIBf.campaign{ii}		= OIB.campaign{ii}; % Campaign name
+    OIBf.num_segment(ii)	= OIB.num_segment(ii); % Number of days from each campaign (e.g. campaign 1993_Greenland_P3 has 10 segments (days))
+    OIBf.num_frame{ii}		= OIB.num_frame{ii}; % Number of frames from each day of each campaign (e.g. segment 19930623_01 from 1993_Greenland_P3 has 32 frames)
+    OIBf.segment{ii}		= OIB.segment{ii}; % Days of each campaign (e.g. 1x10 cell for campaign 1993_Greenland_P3 listing the first frame of each day, e.g. 19930623_01)
+    OIBf.gd_segment{ii}		= []; % Set up variable to record segments with points in roi
+    OIBf.x{ii}				= [];
+    OIBf.y{ii}				= [];
+
+	for j = 1:OIB.num_segment(ii)      % Loop through each segment from each campaign
+		% Get indices of segment points within tile
+        n					= find(OIB.x{ii}{j} >= (Tile_xmin) & OIB.x{ii}{j}...
+            <= (Tile_xmax) & OIB.y{ii}{j} >= (Tile_ymin) & OIB.y{ii}{j} <= (Tile_ymax));
+
+        if ~isempty(n) && length(n) > 2 % If there are more than 2 points per segment, combine with other segments
+        OIBf.elev_bed{ii}{j}	= OIB.elev_bed{ii}{j}(n); % bed elevation
+        OIBf.elev_surf{ii}{j}	= OIB.elev_surf{ii}{j}(n); % elevation of ice surface
+        OIBf.x{ii}{j}			= OIB.x{ii}{j}(n); % PS x
+        OIBf.y{ii}{j}			= OIB.y{ii}{j}(n); % PX y 
+        OIBf.gd_segment{ii}		= [OIBf.gd_segment{ii}, j]; % Record only segments with points in roi
+        end
+        clear n
+	end
+
+    % Only keep segments with points in tile
+	if ~isempty(OIBf.x{ii})
+    OIBf.elev_bed{ii}		= OIBf.elev_bed{ii}(OIBf.gd_segment{ii});
+    OIBf.elev_surf{ii}		= OIBf.elev_surf{ii}(OIBf.gd_segment{ii});
+    OIBf.x{ii}				= OIBf.x{ii}(OIBf.gd_segment{ii});
+    OIBf.y{ii}				= OIBf.y{ii}(OIBf.gd_segment{ii});
+    OIBf.segment{ii}		= OIBf.segment{ii}(OIBf.gd_segment{ii});
+    OIBf.num_frame{ii}		= OIBf.num_frame{ii}(OIBf.gd_segment{ii});
+    OIBf.gd_campaign		= [OIBf.gd_campaign, ii];
+	end
+end
+
+% Only keep campaigns with points in tile
+OIBf.elev_bed               = OIBf.elev_bed(OIBf.gd_campaign);
+OIBf.elev_surf              = OIBf.elev_surf(OIBf.gd_campaign);
+OIBf.x                      = OIBf.x(OIBf.gd_campaign);
+OIBf.y                      = OIBf.y(OIBf.gd_campaign);
+OIBf.segment                = OIBf.segment(OIBf.gd_campaign);
+OIBf.num_frame              = OIBf.num_frame(OIBf.gd_campaign);
+OIBf.num_segment            = OIBf.num_segment(OIBf.gd_campaign);
+OIBf.campaign               = OIBf.campaign(OIBf.gd_campaign);
+OIBf.gd_segment             = OIBf.gd_segment(OIBf.gd_campaign);
+
+% Aggregate observations from all years/campaigns/segments
+OIBc                        = struct('xq', [], 'yq', [], 'thickq', [], 'campaign', [], 'segment', [], 'x', [], 'y', [], 'thick', []);
+
+for ii = 1:length(OIBf.campaign) % Loop through campaigns
+    for j = 1:length(OIBf.segment{ii}) % Loop through segments
+    OIBc.xq                 = [OIBc.xq; OIBf.x{ii}{j}(:) ./ 1e3];
+    OIBc.yq                 = [OIBc.yq; OIBf.y{ii}{j}(:) ./ 1e3];
+    OIBc.thickq             = [OIBc.thickq; OIBf.elev_surf{ii}{j}(:) - OIBf.elev_bed{ii}{j}(:)];
+    OIBc.campaign           = [OIBc.campaign; OIBf.campaign(ii)];
+    OIBc.segment            = [OIBc.segment; OIBf.segment{ii}{j}];
+    end
+end
+
+% Filter out infinite values
+if any(OIBc.thickq == Inf)
+OIBc.xq(OIBc.thickq == Inf)	= [];
+OIBc.yq(OIBc.thickq == Inf) = [];
+OIBc.thickq(OIBc.thickq == Inf)	= [];
+end
+
+% % Resample observations at BM5 grid resolution, taking the median of all points within a grid cell
+% kx							= interp1(SIA.x,1:num_x_SIA, OIBc.xq, 'nearest'); % find (sub)index of nearest x-grid coordinate
+% ky							= interp1(SIA.y, 1:num_y_SIA, OIBc.yq, 'nearest'); % find (sub)index of nearest y-grid coordinate
+% ki							= sub2ind([num_y_SIA, num_x_SIA],ky,kx); % Convert to index of vectorized grid
+% ku							= unique(ki, 'stable'); % Get unique indices in order
+% ku(isnan(ku))				= [];
+% OIBc.x						= x_grd(ku); % Store unique x-grid coordinates
+% OIBc.y						= y_grd(ku); % Store unique y-grid coordinates
+% for ii = 1:length(ku)
+%     OIBc.thick(ii,1)		= median(OIBc.thickq(ki == ku(ii)), 'omitnan'); % Median of all points with this index  
+% end
+
+clear kx ky ki ku ii OIBf
