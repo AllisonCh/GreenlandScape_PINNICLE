@@ -441,17 +441,10 @@ ky							= interp1(SIA.y, 1:num_y_SIA, OIBc.yq, 'nearest'); % find (sub)index of
 ki							= sub2ind([num_y_SIA, num_x_SIA],ky,kx); % Convert to index of vectorized grid
 ku							= unique(ki, 'stable'); % Get unique indices in order
 ku(isnan(ku))				= [];
-x							= x_grd(ku); % Store unique x-grid coordinates
-y							= y_grd(ku); % Store unique y-grid coordinates
+x						= x_grd(ku); % Store unique x-grid coordinates
+OIBc.y						= y_grd(ku); % Store unique y-grid coordinates
 for ii = 1:length(ku)
-    thickness(ii,1)				= median(OIBc.thickq(ki == ku(ii)), 'omitnan'); % Median of all points with this index  
+    OIBc.thick(ii,1)		= median(OIBc.thickq(ki == ku(ii)), 'omitnan'); % Median of all points with this index  
 end
-
-Loc							= isnan(thickness);
-x(Loc)						= [];
-y(Loc)						= [];
-thickness(Loc)					= [];
-
-save(strcat('/Users/achartra/Library/CloudStorage/OneDrive-NASA/Greenland-scape/GreenlandScape_PINNICLE/',Region,'_xyz.mat'), 'x', 'y', 'thick', '-v7.3')
 
 clear kx ky ki ku ii OIBf
