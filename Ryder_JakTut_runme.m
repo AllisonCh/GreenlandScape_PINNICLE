@@ -14,7 +14,7 @@ Tile						= '32_09'; % Ryder is 32_09
 Region						= 'Ryder';
 
 % Specify save names
-RunNum						= '2'; % CHANGE THIS EACH TIME!!!
+RunNum						= '3'; % CHANGE THIS EACH TIME!!!
 Now							= datetime;
 Now.Format					= 'dd-MMM-uuuu'; % 'dd-MMM-uuuu_HH-mm-ss';
 structSaveName				= strcat('./Models/',Region,'_test_I', char(Now),'_',RunNum);
@@ -35,21 +35,23 @@ Tile_ymax					= Tiles(Tile_idx).Y(2) * 1e3;
 Tile_XY_pos					= [Tile_xmin, Tile_ymin; Tile_xmax, Tile_ymin; Tile_xmax, Tile_ymax; Tile_xmin, Tile_ymax; Tile_xmin, Tile_ymin];
 
 % Define desired model domain
-Res							= 1.5e3;
+Res							= 5e2;
 Lx							= Tile_xmax - Tile_xmin;
 Ly							= Tile_ymax - Tile_ymin;
 nx							= Lx / Res;
 ny							= Ly / Res;
 end
 
-flow_eq						= 'HO'; % 'SSA';
+flow_eq						= 'HO';
 
 FrictionLaw					= 'Weertman';
 Friction_guess				= 3e3;
 cost_fns					= [101 103];
 cost_fns_coeffs				= [40, 1];
 
-nsteps						= 100;
+Gn							= 3;
+
+nsteps						= 200;
 maxiter_per_step			= 20;
 
 %%
@@ -146,7 +148,7 @@ if any(steps==2)
 
 	% set rheology
 	disp('   Construct ice rheological properties');
-	md.materials.rheology_n		= 3*ones(md.mesh.numberofelements,1);
+	md.materials.rheology_n		= Gn*ones(md.mesh.numberofelements,1);
 	md.materials.rheology_B		= paterson(md.initialization.temperature);
 	md.damage.D					= zeros(md.mesh.numberofvertices,1);
 	%Reduce viscosity along the shear margins
@@ -195,6 +197,8 @@ if any(steps==2)
 		mds.stressbalance.spcvz(pos) = 0;  % Set the z-axis velocity constraint to zero on the boundary vertices (no vertical component of velocity)
 		mds.stressbalance.spcvx_base = zeros(mds.mesh.numberofvertices,1);
 		mds.stressbalance.spcvy_base = zeros(mds.mesh.numberofvertices,1);
+	else
+		mds = md;
 	end
 	% Set basal friction coefficient guess - frictionwaterlayer
 	disp('   Construct basal friction parameters');
@@ -202,12 +206,12 @@ if any(steps==2)
 
 	% md=parameterize(md,'Ryd.par');
 
-	save(strcat(Region,'Par'),'mds')
+	% save(strcat(Region,'Par'),'mds')
 end 
 
 if any(steps==3) 
 	disp('   Step 3: Control method friction');
-	mds=loadmodel(strcat(Region,'Par'));
+	% mds=loadmodel(strcat(Region,'Par'));
 
 	mds								= setflowequation(mds,flow_eq,'all');
 
@@ -283,12 +287,12 @@ end
 
 % save
 
-% if any(steps == 4)
-% 	disp('	Saving')
-% 	save(mdSaveName, 'mds')
-% 	saveasstruct(md, strcat(structSaveName, '.mat'));
-% end
-%%
+if any(steps == 4)
+	disp('	Saving')
+	save(mdSaveName, 'mds')
+	saveasstruct(md, strcat(structSaveName, '.mat'));
+end
+
 % if any(steps==5) 
 
 	disp('   Plotting')
