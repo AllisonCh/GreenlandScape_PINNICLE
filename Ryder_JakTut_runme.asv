@@ -440,21 +440,21 @@ OIBc.thickq(OIBc.thickq == Inf)	= [];
 end
 
 
-Loc							= isnan(OIBc.thickq);
-OIBc.xq(Loc)						= [];
-OIBc.yq(Loc)						= [];
-OIBc.thickq(Loc)					= [];
+thickness					= OIBc.thickq;
 
-hnx							= x1 <= Tile_xmax + 150 & x1 >= Tile_xmin - 150;
-hny							= y1 <= Tile_ymax + 150 & y1 >= Tile_ymin - 150;
+Loc							= isnan(thickness);
+OIBc.x(Loc)						= [];
+OIBc.y(Loc)						= [];
+thickness(Loc)					= [];
+
+hnx							= x1 <= Tile_xmax & x1 >= Tile_xmin;
+hny							= y1 <= Tile_ymax & y1 >= Tile_ymin;
 
 x_tile						= x1(hnx);
 y_tile						= y1(hny);
 h_tile						= h(hny, hnx);
 num_x_tile					= length(x_tile);
 num_y_tile					= length(y_tile);
-
-[x_grd, y_grd]				= meshgrid(x_tile, y_tile);
 
 % Resample observations at BM5 grid resolution, taking the median of all points within a grid cell
 kx							= interp1(x_tile(:), 1:num_x_tile, OIBc.xq, 'nearest'); % find (sub)index of nearest x-grid coordinate
@@ -464,13 +464,12 @@ ku							= unique(ki, 'stable'); % Get unique indices in order
 ku(isnan(ku))				= [];
 x							= x_grd(ku); % Store unique x-grid coordinates
 y							= y_grd(ku); % Store unique y-grid coordinates
-thickness					= nan * ones(length(x),1);
 for ii = 1:length(ku)
     thickness(ii,1)				= median(OIBc.thickq(ki == ku(ii)), 'omitnan'); % Median of all points with this index  
 end
 
 
 
-save(strcat('/Users/achartra/Library/CloudStorage/OneDrive-NASA/Greenland-scape/GreenlandScape_PINNICLE/',Region,'_xyz_ds.mat'), 'x', 'y', 'thickness', '-v7.3')
+save(strcat('/Users/achartra/Library/CloudStorage/OneDrive-NASA/Greenland-scape/GreenlandScape_PINNICLE/',Region,'_xyz_ds.mat'), 'x', 'y', 'thick', '-v7.3')
 
 clear kx ky ki ku ii OIBf
