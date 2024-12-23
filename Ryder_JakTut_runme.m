@@ -61,13 +61,13 @@ if any(steps==1)
 	md.mesh.x					= md.mesh.x + Tile_xmin;
 	md.mesh.y					= md.mesh.y + Tile_ymin;
 
-	save(strcat(Region,'Mesh'),'md')
+	% save(strcat(Region,'Mesh'),'md')
 end 
 
 
 if any(steps==1) 
 	disp('   Step 2: Parameterization');
-	md							= loadmodel(strcat(Region,'Mesh'));
+	% md							= loadmodel(strcat(Region,'Mesh'));
 
 	md							= setmask(md,'','');
 
@@ -264,7 +264,7 @@ if any(steps==3)
 	mds.cluster						= generic('name',oshostname,'np',4);
 	mds								= solve(mds,'Stressbalance');
 
-	save(strcat(Region,'Control'), 'mds')
+	% save(strcat(Region,'Control'), 'mds')
 
 	% save in PINNICLE-friendly format
 	warning off MATLAB:structOnObject
