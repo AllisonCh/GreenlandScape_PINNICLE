@@ -1,0 +1,41 @@
+2024-12-20 15:47:58.279455: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2024-12-20 15:47:59.880465: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:477] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1734727680.107588 1207549 cuda_dnn.cc:8310] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+E0000 00:00:1734727680.202312 1207549 cuda_blas.cc:1418] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+2024-12-20 15:48:01.155350: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 AVX512F AVX512_VNNI FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+Using backend: tensorflow
+Other supported backends: tensorflow.compat.v1, pytorch, jax, paddle.
+paddle supports more examples now and is recommended.
+Enable just-in-time compilation with XLA.
+
+Disable just-in-time compilation with XLA.
+ERROR:root:ERROR: MATLAB type not supported: qmustatistics, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: lovenumbers, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: rotational, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: solidearthsettings, (uint32)
+2024-12-20 15:48:33.801761: W tensorflow/core/common_runtime/gpu/gpu_bfc_allocator.cc:47] Overriding orig_value setting because the TF_FORCE_GPU_ALLOW_GROWTH environment variable is set. Original config value was 0.
+I0000 00:00:1734727713.802014 1207549 gpu_device.cc:2022] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 31134 MB memory:  -> device: 0, name: Tesla V100-SXM2-32GB, pci bus id: 0000:61:00.0, compute capability: 7.0
+Set the default float type to float64
+add Fourier feature transform to input transform
+add output transform with [-3.1709792e-04 -3.1709792e-04 -1.0000000e+03  1.0000000e+01
+  1.0000000e-02  7.0000000e+07] and [3.1709792e-04 3.1709792e-04 3.6000000e+03 3.5000000e+03 1.0000000e+04
+ 7.0000000e+08]
+Compiling model...
+'compile' took 0.006761 s
+
+Training model...
+
+Step      Train loss                                                                          Test loss                                                                           Test metric
+0         [2.67e+02, 4.93e+02, 1.19e+03, 7.79e+02, 8.22e+00, 9.03e-01, 4.85e-01, 3.75e+00]    [2.67e+02, 4.93e+02, 1.19e+03, 7.79e+02, 8.22e+00, 9.03e-01, 4.85e-01, 3.75e+00]    []  
+10000     [7.99e-03, 1.02e-02, 1.99e-03, 8.64e-03, 1.67e-03, 3.62e-02, 9.38e-03, 6.42e-04]    [7.99e-03, 1.02e-02, 1.99e-03, 8.64e-03, 1.67e-03, 3.62e-02, 9.38e-03, 6.42e-04]    []  
+20000     [5.63e-03, 5.52e-03, 1.28e-03, 8.87e-04, 3.13e-04, 1.51e-02, 4.16e-03, 1.28e-04]    [5.63e-03, 5.52e-03, 1.28e-03, 8.87e-04, 3.13e-04, 1.51e-02, 4.16e-03, 1.28e-04]    []  
+
+Best model at step 20000:
+  train loss: 3.30e-02
+  test loss: 3.30e-02
+  test metric: []
+
+'train' took 2372.903948 s
+

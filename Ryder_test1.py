@@ -16,7 +16,7 @@ dde.config.set_random_seed(1234)
 issm_filename = "Ryder_test_I19-Dec-2024_3"
 datestr = datetime.now().strftime("%d-%b-%y")
 
-issm_pinn_path = issm_filename + "_P" + datestr + "_3"
+issm_pinn_path = issm_filename + "_P" + datestr + "_2"
 # General parameters for training
 # Setting up dictionaries
 # order doesn't matter, but keys DO matter
@@ -43,7 +43,7 @@ issm["data_path"] = "./Models/" + issm_filename + ".mat"
 issm["data_size"] = {"u":10000, "v":10000, "s":10000, "H":None, "C":10000, "B":10000}
 hp["data"] = {"ISSM":issm, "ft":flightTrack} # hp = 'hyperparameters'
 
-hp["epochs"] = int(2e4)
+hp["epochs"] = int(1e6)
 hp["learning_rate"] = 0.0005
 hp["loss_function"] = "MSE"
 hp["save_path"] = "./PINNs/" + issm_pinn_path
@@ -64,29 +64,22 @@ hp["num_collocation_points"] = 20000
 
 # Add physics
 yts = pinn.physics.Constants().yts
-SSA = {}
-SSA["scalar_variables"] = {"B":2e+08, "n":3} # -20 deg C
+# SSA = {}
+# SSA["scalar_variables"] = {"n":3} # -20 deg C
                     # u                     v                 s        H      C        B
-SSA["data_weights"] = [(1.0e-2*yts)**2.0, (1.0e-2*yts)**2.0, 5.0e-6, 2.0e-6, 5.0e-8, 1e-16]
+# SSA["data_weights"] = [(1.0e-2*yts)**2.0, (1.0e-2*yts)**2.0, 5.0e-6, 2.0e-6, 7.0e-8, 1e-16]
 # hp["equations"] = {"SSA":{"input":["x1", "x2"]}}
-hp["equations"] = {"SSA_VB":SSA}
+# hp["equations"] = {"SSA_VB":SSA}
 
-# MOLHO = {}
-# MOLHO["scalar_variables"] = {"B":2e+08}
-# hp["equations"] = {"MOLHO":MOLHO}
+MOLHO = {}
+MOLHO["scalar_variables"] = {"B":2e+08}
+hp["equations"] = {"MOLHO":MOLHO}
 #                     #        u                 v                u_base               v_base            s        H      C
-# MOLHO["data_weights"] = [(1.0e-2*yts)**2.0, (1.0e-2*yts)**2.0, (1.0e-2*yts)**2.0, (1.0e-2*yts)**2.0, 1.0e-6, 1.0e-6, 1.0e-8]
+MOLHO["data_weights"] = [(1.0e-2*yts)**2.0, (1.0e-2*yts)**2.0, (1.0e-2*yts)**2.0, (1.0e-2*yts)**2.0, 1.0e-6, 1.0e-6, 1.0e-8]
 
 hp['fft'] = True
 hp['sigma'] = 5
 hp['num_fourier_feature'] = 30
-
-# Add an additional loss function to balance the contributions between the fast flow and slow moving regions:
-# vel_loss = {}
-# vel_loss['name'] = "vel log"
-# vel_loss['function'] = "VEL_LOG"
-# vel_loss['weight'] = 1.0e-5
-# hp["additional_loss"] = {"vel":vel_loss}
 
 experiment = pinn.PINN(hp) # set up class PINN (in pinn.py in pinnicle package)
 # experiment.update_parameters(hp)
@@ -97,13 +90,13 @@ experiment.compile()
 
 # Train
 experiment.train()
+
 # Show results
 experiment.plot_predictions(X_ref=experiment.model_data.data["ISSM"].X_dict, sol_ref=experiment.model_data.data["ISSM"].data_dict)
 
 # Save results 
 import hdf5storage
 import scipy
-
 
 resolution = 150
     # generate 200x200 mesh on the domain
