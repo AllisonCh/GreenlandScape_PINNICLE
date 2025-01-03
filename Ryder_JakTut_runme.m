@@ -16,9 +16,9 @@ Region						= 'Ryder';
 % Specify save names
 RunNum						= '3'; % CHANGE THIS EACH TIME!!!
 Now							= datetime;
-Now.Format					= 'dd-MMM-uuuu'; % 'dd-MMM-uuuu_HH-mm-ss';
-structSaveName				= strcat('./Models/',Region,'_test_I', char(Now),'_',RunNum);
-mdSaveName					= strcat('./Models/',Region,'_test.', char(Now),'_',RunNum);
+Now.Format					= 'uuuu-MMM-dd'; % 'dd-MMM-uuuu_HH-mm-ss';
+structSaveName				= strcat('./Models/',Region,'_issm', char(Now),'_',RunNum);
+mdSaveName					= strcat('./Models/',Region,'.', char(Now),'_',RunNum);
 
 
 
