@@ -13,10 +13,10 @@ dde.config.disable_xla_jit()
 dde.config.set_random_seed(1234)
 
 
-issm_filename = "Ryder_test_I19-Dec-2024_3"
+issm_filename = "Ryder_issm2024-Dec-19_3"
 datestr = datetime.now().strftime("%d-%b-%y")
 
-issm_pinn_path = issm_filename + "_P" + datestr + "_2"
+issm_pinn_path = issm_filename + "_P" + datestr + "_1"
 # General parameters for training
 # Setting up dictionaries
 # order doesn't matter, but keys DO matter
@@ -32,7 +32,7 @@ hp = {}
 # in the training, but not given in data_size, then there will be no data for this variable in the training
 flightTrack = {}
 flightTrack["data_path"] = "./Ryder_xyz_ds.mat"
-flightTrack["data_size"] = {"H": 20000}
+flightTrack["data_size"] = {"H": 10000}
 flightTrack["name_map"] = {"H": "thickness"}
 flightTrack["X_map"] = {"x": "x", "y":"y"}
 flightTrack["source"] = "mat"
@@ -40,11 +40,11 @@ hp["data"] = {"ft": flightTrack}
 
 issm = {}
 issm["data_path"] = "./Models/" + issm_filename + ".mat"
-issm["data_size"] = {"u":10000, "v":10000, "s":10000, "H":None, "C":10000, "B":10000}
+issm["data_size"] = {"u":5000, "v":5000, "s":5000, "H":None, "C":5000, "B":5000}
 hp["data"] = {"ISSM":issm, "ft":flightTrack} # hp = 'hyperparameters'
 
-hp["epochs"] = int(1e6)
-hp["learning_rate"] = 0.0005
+hp["epochs"] = int(5e5)
+hp["learning_rate"] = 0.001
 hp["loss_function"] = "MSE"
 hp["save_path"] = "./PINNs/" + issm_pinn_path
 hp["is_save"] = True
@@ -60,7 +60,7 @@ hp["input"] = ['y', 'x']
 # Define domain of computation
 hp["shapefile"] = "./Ryder_32_09.exp"
 # Define number of collocation points used to evaluate PDE residual
-hp["num_collocation_points"] = 20000
+hp["num_collocation_points"] = 10000
 
 # Add physics
 yts = pinn.physics.Constants().yts

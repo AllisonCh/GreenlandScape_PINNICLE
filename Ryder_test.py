@@ -13,10 +13,10 @@ dde.config.disable_xla_jit()
 dde.config.set_random_seed(1234)
 
 
-issm_filename = "Ryder_test_I19-Dec-2024_3"
-datestr = datetime.now().strftime("%d-%b-%y")
+issm_filename = "Ryder_issm2024-Dec-19_3"
+datestr = datetime.now().strftime("%y-%b-%d")
 
-issm_pinn_path = issm_filename + "_P" + datestr + "_1"
+issm_pinn_path = issm_filename + "_pinn" + datestr + "_1"
 # General parameters for training
 # Setting up dictionaries
 # order doesn't matter, but keys DO matter
