@@ -14,9 +14,9 @@ dde.config.set_random_seed(1234)
 
 
 issm_filename = "Ryder_issm2024-Dec-19_3"
-datestr = datetime.now().strftime("%d-%b-%y")
+datestr = datetime.now().strftime("%y-%b-%d")
 
-issm_pinn_path = issm_filename + "_P" + datestr + "_1"
+issm_pinn_path = issm_filename + "_pinn" + datestr + "_2G"
 # General parameters for training
 # Setting up dictionaries
 # order doesn't matter, but keys DO matter
@@ -40,10 +40,10 @@ hp["data"] = {"ft": flightTrack}
 
 issm = {}
 issm["data_path"] = "./Models/" + issm_filename + ".mat"
-issm["data_size"] = {"u":5000, "v":5000, "s":5000, "H":None, "C":5000, "B":5000}
+issm["data_size"] = {"u":5000, "v":5000, "s":5000, "H":None, "C":None}
 hp["data"] = {"ISSM":issm, "ft":flightTrack} # hp = 'hyperparameters'
 
-hp["epochs"] = int(5e5)
+hp["epochs"] = int(2e5)
 hp["learning_rate"] = 0.001
 hp["loss_function"] = "MSE"
 hp["save_path"] = "./PINNs/" + issm_pinn_path
@@ -64,18 +64,12 @@ hp["num_collocation_points"] = 10000
 
 # Add physics
 yts = pinn.physics.Constants().yts
-# SSA = {}
-# SSA["scalar_variables"] = {"n":3} # -20 deg C
-                    # u                     v                 s        H      C        B
-# SSA["data_weights"] = [(1.0e-2*yts)**2.0, (1.0e-2*yts)**2.0, 5.0e-6, 2.0e-6, 7.0e-8, 1e-16]
-# hp["equations"] = {"SSA":{"input":["x1", "x2"]}}
-# hp["equations"] = {"SSA_VB":SSA}
 
 MOLHO = {}
 MOLHO["scalar_variables"] = {"B":2e+08}
 hp["equations"] = {"MOLHO":MOLHO}
 #                     #        u                 v                u_base               v_base            s        H      C
-MOLHO["data_weights"] = [(1.0e-2*yts)**2.0, (1.0e-2*yts)**2.0, (1.0e-2*yts)**2.0, (1.0e-2*yts)**2.0, 1.0e-6, 1.0e-6, 1.0e-8]
+MOLHO["data_weights"] = [(1.0e-2*yts)**2.0, (1.0e-2*yts)**2.0, (1.0e-2*yts)**2.0, (1.0e-2*yts)**2.0, 5.0e-6, 1.0e-6, 1.0e-8]
 
 hp['fft'] = True
 hp['sigma'] = 5
