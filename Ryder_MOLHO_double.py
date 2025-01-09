@@ -16,7 +16,7 @@ dde.config.set_random_seed(1234)
 issm_filename = "Ryder_issm2024-Dec-19_3"
 datestr = datetime.now().strftime("%y-%b-%d")
 
-issm_pinn_path = issm_filename + "_pinn" + datestr + "_2G"
+issm_pinn_path = issm_filename + "_pinn" + datestr + "_1G"
 # General parameters for training
 # Setting up dictionaries
 # order doesn't matter, but keys DO matter
@@ -40,10 +40,10 @@ hp["data"] = {"ft": flightTrack}
 
 issm = {}
 issm["data_path"] = "./Models/" + issm_filename + ".mat"
-issm["data_size"] = {"u":5000, "v":5000, "s":5000, "H":None, "C":None}
+issm["data_size"] = {"u":8000, "v":8000, "s":8000, "H":None, "C":None}
 hp["data"] = {"ISSM":issm, "ft":flightTrack} # hp = 'hyperparameters'
 
-hp["epochs"] = int(2e5)
+hp["epochs"] = int(4e5)
 hp["learning_rate"] = 0.001
 hp["loss_function"] = "MSE"
 hp["save_path"] = "./PINNs/" + issm_pinn_path
@@ -60,7 +60,7 @@ hp["input"] = ['y', 'x']
 # Define domain of computation
 hp["shapefile"] = "./Ryder_32_09.exp"
 # Define number of collocation points used to evaluate PDE residual
-hp["num_collocation_points"] = 10000
+hp["num_collocation_points"] = 16000
 
 # Add physics
 yts = pinn.physics.Constants().yts
@@ -69,7 +69,7 @@ MOLHO = {}
 MOLHO["scalar_variables"] = {"B":2e+08}
 hp["equations"] = {"MOLHO":MOLHO}
 #                     #        u                 v                u_base               v_base            s        H      C
-MOLHO["data_weights"] = [(1.0e-2*yts)**2.0, (1.0e-2*yts)**2.0, (1.0e-2*yts)**2.0, (1.0e-2*yts)**2.0, 5.0e-6, 1.0e-6, 1.0e-8]
+MOLHO["data_weights"] = [(1.0e-2*yts)**2.0, (1.0e-2*yts)**2.0, (1.0e-2*yts)**2.0, (1.0e-2*yts)**2.0, 5.0e-6, 2.0e-6, 1.0e-8]
 
 hp['fft'] = True
 hp['sigma'] = 5

@@ -43,7 +43,7 @@ issm["data_path"] = "./Models/" + issm_filename + ".mat"
 issm["data_size"] = {"u":5000, "v":5000, "s":5000, "H":None, "C":5000, "B":5000}
 hp["data"] = {"ISSM":issm, "ft":flightTrack} # hp = 'hyperparameters'
 
-hp["epochs"] = int(4e5)
+hp["epochs"] = int(4e3)
 hp["learning_rate"] = 0.001
 hp["loss_function"] = "MSE"
 hp["save_path"] = "./PINNs/" + issm_pinn_path
@@ -75,7 +75,7 @@ MOLHO = {}
 MOLHO["scalar_variables"] = {"B":2e+08}
 hp["equations"] = {"MOLHO":MOLHO}
 #                     #        u                 v                u_base               v_base            s        H      C
-MOLHO["data_weights"] = [(1.0e-2*yts)**2.0, (1.0e-2*yts)**2.0, (1.0e-2*yts)**2.0, (1.0e-2*yts)**2.0, 5.0e-6, 1.0e-6, 1.0e-8]
+MOLHO["data_weights"] = [(1.0e-2*yts)**2.0, (1.0e-2*yts)**2.0, (1.0e-3*yts)**2.0, (1.0e-3*yts)**2.0, 5.0e-6, 1.0e-6, 1.0e-8]
 
 hp['fft'] = True
 hp['sigma'] = 5
