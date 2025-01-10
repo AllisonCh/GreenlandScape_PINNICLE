@@ -16,7 +16,7 @@ dde.config.set_random_seed(1234)
 issm_filename = "Ryder_issm2024-Dec-19_3"
 datestr = datetime.now().strftime("%y-%b-%d")
 
-issm_pinn_path = issm_filename + "_pinn" + datestr + "_1G"
+issm_pinn_path = issm_filename + "_pinn" + datestr + "_2G"
 # General parameters for training
 # Setting up dictionaries: order doesn't matter, but keys DO matter
 hp = {}
@@ -31,9 +31,8 @@ yts = pinn.physics.Constants().yts
 data_size = 8000
 data_size_ft = 10000
 wt_uv = (1.0e-2*yts)**2.0
-wt_uvb = (1.0e-3*yts)**2.0
 wt_s = 5.0e-6
-wt_H = 1.0e-6
+wt_H = 5.0e-6
 wt_C = 1.0e-8
 wt_B = 1e-16
 
@@ -48,7 +47,7 @@ hp["data"] = {"ft": flightTrack}
 
 issm = {}
 issm["data_path"] = "./Models/" + issm_filename + ".mat"
-issm["data_size"] = {"u":data_size, "v":data_size, "s":data_size, "H":None, "C":data_size, "B":data_size}
+issm["data_size"] = {"u":data_size, "v":data_size, "s":data_size, "H":None, "C":None, "B":data_size}
 hp["data"] = {"ISSM":issm, "ft":flightTrack} # hp = 'hyperparameters'
 
 # Define number of collocation points used to evaluate PDE residual
