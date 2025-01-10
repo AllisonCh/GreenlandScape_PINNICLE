@@ -100,7 +100,7 @@ X_nn = np.hstack((X.flatten()[:,None], Y.flatten()[:,None]))
 
 # predicted solutions
 sol_pred = experiment.model.predict(X_nn)
-plot_data = {k+"_pred":np.reshape(sol_pred[:,i:i+1], X.shape) for i,k in enumerate(experiment.params.nn.output_variables)}
+# plot_data = {k+"_pred":np.reshape(sol_pred[:,i:i+1], X.shape) for i,k in enumerate(experiment.params.nn.output_variables)}
 
 mat_data = {} # make a dictionary to store the MAT data in
 vars2save = ['sol_pred','X_nn']
