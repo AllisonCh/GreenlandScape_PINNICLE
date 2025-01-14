@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=pinn2025-Jan-10_1G        # Job name (or -J my_job_name)
+#SBATCH --job-name=pinn2025-Jan-13_1G        # Job name (or -J my_job_name)
 #SBATCH --output=output.%J           # Standard output file (or -o output.%j for job number to be appended)
 #SBATCH --error=error.%J             # Standard error file (or -e error.%j for job number to be appended)
 #SBATCH --gpus=1		      # Number of GPUs required for job (or -G1)

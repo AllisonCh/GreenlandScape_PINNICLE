@@ -33,17 +33,16 @@ data_size_ft = 10000
 wt_uv = (1.0e-2*yts)**2.0
 wt_uvb = (1.0e-1*yts)**2.0
 wt_s = 5.0e-6
-wt_H = 5.0e-6
+wt_H = 1.0e-5
 wt_C = 1.0e-8
 
 # Load data
 flightTrack = {}
-flightTrack["data_path"] = "./Ryder_xyz_ds.mat"
-flightTrack["data_size"] = {"H": data_size_ft}
-flightTrack["name_map"] = {"H": "thickness"}
+flightTrack["data_path"] = "Ryder_xyz_ds_vel_base.mat"
+flightTrack["data_size"] = {"H": data_size_ft, "u_base":1000, "v_base":1000}
 flightTrack["X_map"] = {"x": "x", "y":"y"}
+flightTrack["name_map"] = {"H": "thickness","u_base":"u_base", "v_base":"v_base"}
 flightTrack["source"] = "mat"
-hp["data"] = {"ft": flightTrack}
 
 issm = {}
 issm["data_path"] = "./Models/" + issm_filename + ".mat"
