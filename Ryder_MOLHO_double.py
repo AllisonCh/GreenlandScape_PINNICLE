@@ -16,7 +16,7 @@ dde.config.set_random_seed(1234)
 issm_filename = "Ryder_issm2024-Dec-19_3"
 datestr = datetime.now().strftime("%y-%b-%d")
 
-issm_pinn_path = issm_filename + "_pinn" + datestr + "_1G"
+issm_pinn_path = issm_filename + "_pinn" + datestr + "_2G"
 # General parameters for training
 # Setting up dictionaries: order doesn't matter, but keys DO matter
 hp = {}
@@ -45,7 +45,7 @@ flightTrack["name_map"] = {"H": "thickness"}
 flightTrack["source"] = "mat"
 
 velbase = {}
-velbase["data_path"] = "./Ryder_vel_base.mat"
+velbase["data_path"] = "./Ryder_vel_base_ms.mat"
 velbase["data_size"] = {"u_base":data_size, "v_base":data_size}
 velbase["name_map"] = {"u_base":"md_u_base", "v_base":"md_v_base"}
 velbase["X_map"] = {"x":"x", "y":"y"}
@@ -215,6 +215,8 @@ ref_data = {k:griddata(X_ref, sol_ref[k].flatten(), (X, Y), method='cubic') for 
 
 ref_data["u"] = yts*ref_data["u"]
 ref_data["v"] = yts*ref_data["v"]
+ref_data["u_base"] = yts*ref_data["u_base"]
+ref_data["v_base"] = yts*ref_data["v_base"]
 ref_data_plot = {"vel": np.sqrt(np.square(ref_data["u"]) + np.square(ref_data["v"])), "vel_base": np.sqrt(np.square(ref_data["u_base"]) + np.square(ref_data["v_base"])),
                  "hs":[], "C":ref_data["C"], "bed_elev":ref_data["s"] - ref_data["H"]}
 
