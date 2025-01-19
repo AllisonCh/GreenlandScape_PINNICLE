@@ -10,11 +10,11 @@ Path2dataJAM				= '/Users/achartra/Library/CloudStorage/OneDrive-NASA/Greenland-
 Path2dataGS					= '/Users/achartra/Library/CloudStorage/OneDrive-NASA/Greenland-scape/Data/';
 
 % Get tile boundaries
-Tile						= '32_09'; % Ryder is 32_09
-Region						= 'Ryder';
+Tile						= '17_11'; % Ryder is 32_09; East of Jackobsavn (EGIG) is 17_11
+Region						= 'UpperJakobshavn';
 
 % Specify save names
-RunNum						= '3'; % CHANGE THIS EACH TIME!!!
+RunNum						= '1'; % CHANGE THIS EACH TIME!!!
 Now							= datetime;
 Now.Format					= 'uuuu-MMM-dd'; % 'dd-MMM-uuuu_HH-mm-ss';
 structSaveName				= strcat('./Models/',Region,'_issm', char(Now),'_',RunNum);
