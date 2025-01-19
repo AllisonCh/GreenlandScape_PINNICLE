@@ -16,7 +16,7 @@ dde.config.set_random_seed(1234)
 issm_filename = "Ryder_issm2024-Dec-19_3"
 datestr = datetime.now().strftime("%y-%b-%d")
 
-issm_pinn_path = issm_filename + "_pinn" + datestr + "_2G"
+issm_pinn_path = issm_filename + "_pinn" + datestr + "_3G"
 # General parameters for training
 # Setting up dictionaries: order doesn't matter, but keys DO matter
 hp = {}
@@ -32,8 +32,8 @@ data_size = 8000
 data_size_ft = 10000
 wt_uv = (1.0e-2*yts)**2.0
 wt_uvb = (1.0e-1*yts)**2.0
-wt_s = 5.0e-6
-wt_H = 1.0e-5
+wt_s = 1.0e-6
+wt_H = 1.0e-6
 wt_C = 1.0e-8
 
 # Load data
@@ -103,10 +103,10 @@ experiment.plot_predictions(X_ref=experiment.model_data.data["ISSM"].X_dict, sol
 import hdf5storage
 import scipy
 
-resolution = 150
+grid_size = 501
     # generate 200x200 mesh on the domain
-X, Y = np.meshgrid(np.linspace(experiment.params.nn.input_lb[0], experiment.params.nn.input_ub[0], resolution),
-                   np.linspace(experiment.params.nn.input_lb[1], experiment.params.nn.input_ub[1], resolution))
+X, Y = np.meshgrid(np.linspace(experiment.params.nn.input_lb[0], experiment.params.nn.input_ub[0], grid_size),
+                   np.linspace(experiment.params.nn.input_lb[1], experiment.params.nn.input_ub[1], grid_size))
 X_nn = np.hstack((X.flatten()[:,None], Y.flatten()[:,None]))
 
 # predicted solutions
