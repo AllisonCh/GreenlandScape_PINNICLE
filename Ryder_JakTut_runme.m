@@ -45,13 +45,13 @@ end
 flow_eq						= 'HO';
 
 FrictionLaw					= 'Weertman';
-Friction_guess				= 3e3;
+Friction_guess				= 2e3;
 cost_fns					= [101 103];
 cost_fns_coeffs				= [40, 1];
 
 Gn							= 3;
 
-nsteps						= 200;
+nsteps						= 100;
 maxiter_per_step			= 20;
 
 %%
@@ -299,12 +299,12 @@ end
 	% mds=loadmodel(mdSaveName);
 	% 
 	f1 = figure; plotmodel(mds,'unit#all','km','axis#all','equal',...
-		'data',mds.inversion.vel_obs,'title','Observed velocity',...
-		'data',mds.results.StressbalanceSolution.Vel,'title','Modeled Velocity',...
+		'data',mds.inversion.vel_obs,'layer',1,'title','Observed velocity',...
+		'data',mds.results.StressbalanceSolution.Vel,'layer',1,'title','Modeled Velocity',...
 		'colorbar#1','off','colorbartitle#2','(m/yr)',...
 		'caxis#1',[0,150],...
-		'data',mds.geometry.base,'title','Base elevation',...
-		'data',mds.friction.C,...
+		'data',mds.geometry.base,'layer',2,'title','Base elevation',...
+		'data',mds.friction.C,'layer',2,...
 		'title','Friction Coefficient',...
 		'colorbartitle#3','(m)', 'figure', f1);
 
@@ -468,7 +468,8 @@ thickness					= nan * ones(length(x),1);
 for ii = 1:length(ku)
     thickness(ii,1)				= median(OIBc.thickq(ki == ku(ii)), 'omitnan'); % Median of all points with this index  
 end
-
+yts				= 60*60*24*365;
+thickness = thickness / yts;
 
 
 save(strcat('/Users/achartra/Library/CloudStorage/OneDrive-NASA/Greenland-scape/GreenlandScape_PINNICLE/',Region,'_xyz_ds.mat'), 'x', 'y', 'thickness', '-v7.3')
