@@ -1,0 +1,32 @@
+2025-01-19 13:08:37.292728: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-01-19 13:08:38.224410: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:477] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1737310118.387374 3926845 cuda_dnn.cc:8310] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+E0000 00:00:1737310118.450307 3926845 cuda_blas.cc:1418] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+2025-01-19 13:08:39.133308: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 AVX512F AVX512_VNNI FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+Using backend: tensorflow
+Other supported backends: tensorflow.compat.v1, pytorch, jax, paddle.
+paddle supports more examples now and is recommended.
+Enable just-in-time compilation with XLA.
+
+Disable just-in-time compilation with XLA.
+ERROR:root:ERROR: MATLAB type not supported: qmustatistics, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: lovenumbers, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: rotational, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: solidearthsettings, (uint32)
+Traceback (most recent call last):
+  File "/panfs/ccds02/nobackup/people/achartra/GreenlandScape/GreenlandScape_PINNICLE/Ryder_MOLHO_double.py", line 89, in <module>
+    experiment = pinn.PINN(hp) # set up class PINN (in pinn.py in pinnicle package)
+  File "/panfs/ccds02/nobackup/people/achartra/PINNICLE/pinnicle/pinn.py", line 25, in __init__
+    self.setup()
+  File "/panfs/ccds02/nobackup/people/achartra/PINNICLE/pinnicle/pinn.py", line 141, in setup
+    self.model_data.prepare_training_data(transient=self.params.domain.time_dependent, default_time=self.params.domain.start_time)
+  File "/panfs/ccds02/nobackup/people/achartra/PINNICLE/pinnicle/modeldata/data.py", line 88, in prepare_training_data
+    self.data[key].prepare_training_data()
+  File "/panfs/ccds02/nobackup/people/achartra/PINNICLE/pinnicle/modeldata/general_mat_data.py", line 70, in prepare_training_data
+    idx = down_sample(X_temp, data_size[k])
+  File "/panfs/ccds02/nobackup/people/achartra/PINNICLE/pinnicle/utils/helper.py", line 113, in down_sample
+    idx = np.random.choice(ind, data_size, replace=False)
+  File "numpy/random/mtrand.pyx", line 1028, in numpy.random.mtrand.RandomState.choice
+TypeError: expected a sequence of integers or a single integer, got '4000.0'
