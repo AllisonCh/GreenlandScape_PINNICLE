@@ -34,6 +34,20 @@ Tile_ymin					= Tiles(Tile_idx).Y(1) * 1e3;
 Tile_ymax					= Tiles(Tile_idx).Y(2) * 1e3;
 Tile_XY_pos					= [Tile_xmin, Tile_ymin; Tile_xmax, Tile_ymin; Tile_xmax, Tile_ymax; Tile_xmin, Tile_ymax; Tile_xmin, Tile_ymin];
 
+
+% Write .exp file
+domainFilename				= strcat(Region,'_',Tile,'.exp');
+if ~exist(domainFilename, 'file')
+	fileID					= fopen(domainFilename,'w');
+	fprintf(fileID, '## Name:domainoutline\n');
+	fprintf(fileID, '## Icon:0\n');
+	fprintf(fileID, '# Points Count Value\n');
+	fprintf(fileID, '5 1.\n');
+	fprintf(fileID, '# X pos Y pos\n');
+	fprintf(fileID, '%d %d\n',Tile_XY_pos');
+	fclose(fileID);
+end
+
 % Define desired model domain
 Res							= 5e2;
 Lx							= Tile_xmax - Tile_xmin;
