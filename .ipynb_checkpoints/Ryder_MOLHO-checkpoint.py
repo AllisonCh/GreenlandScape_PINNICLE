@@ -23,17 +23,17 @@ hp = {}
 # Define domain of computation
 hp["shapefile"] = "./Ryder_32_09.exp"
 # Define hyperparameters
-hp["epochs"] = int(1e5)
+hp["epochs"] = int(2e4)
 hp["learning_rate"] = 0.001
 hp["loss_function"] = "MSE"
 
 yts = pinn.physics.Constants().yts
-data_size = 8000
-data_size_ft = 10000
+data_size = 5000
+data_size_ft = 8000
 wt_uv = (1.0e-2*yts)**2.0
-wt_uvb = (1.0e-3*yts)**2.0
+wt_uvb = (1.0e-1*yts)**2.0
 wt_s = 5.0e-6
-wt_H = 1.0e-6
+wt_H = 2.0e-6
 wt_C = 1.0e-8
 
 # Load data
@@ -45,10 +45,17 @@ flightTrack["X_map"] = {"x": "x", "y":"y"}
 flightTrack["source"] = "mat"
 hp["data"] = {"ft": flightTrack}
 
+velbase = {}
+velbase["data_path"] = "./Ryder_vel_base_ms.mat"
+velbase["data_size"] = {"u_base":int(data_size/2), "v_base":int(data_size/2)}
+velbase["name_map"] = {"u_base":"md_u_base", "v_base":"md_v_base"}
+velbase["X_map"] = {"x":"x", "y":"y"}
+velbase["source"] = "mat"
+
 issm = {}
 issm["data_path"] = "./Models/" + issm_filename + ".mat"
 issm["data_size"] = {"u":data_size, "v":data_size, "s":data_size, "H":None, "C":data_size}
-hp["data"] = {"ISSM":issm, "ft":flightTrack} # hp = 'hyperparameters'
+hp["data"] = {"ISSM":issm, "ft":flightTrack,"velbase":velbase} # hp = 'hyperparameters'
 
 # Define number of collocation points used to evaluate PDE residual
 hp["num_collocation_points"] = data_size*2
@@ -200,11 +207,18 @@ yts = pinn.physics.Constants().yts
 
 # reference data
 sol_ref=experiment.model_data.data["ISSM"].data_dict
+if "velbase" in experiment.model_data.data.keys():
+    sol_ref.update(experiment.model_data.data["velbase"].data_dict)
+else:
+    sol_ref["u_base"] = np.ones(np.shape(sol_ref["u"]))/yts
+    sol_ref["v_base"] = np.ones(np.shape(sol_ref["u"]))/yts
 ref_data = {k:griddata(X_ref, sol_ref[k].flatten(), (X, Y), method='cubic') for k in experiment.params.nn.output_variables if k in sol_ref}
 
 ref_data["u"] = yts*ref_data["u"]
 ref_data["v"] = yts*ref_data["v"]
-ref_data_plot = {"vel": np.sqrt(np.square(ref_data["u"]) + np.square(ref_data["v"])), "vel_base": 1.0e-3*np.ones(ref_data["u"].shape),
+ref_data["u_base"] = yts*ref_data["u_base"]
+ref_data["v_base"] = yts*ref_data["v_base"]
+ref_data_plot = {"vel": np.sqrt(np.square(ref_data["u"]) + np.square(ref_data["v"])), "vel_base": np.sqrt(np.square(ref_data["u_base"]) + np.square(ref_data["v_base"])),
                  "hs":[], "C":ref_data["C"], "bed_elev":ref_data["s"] - ref_data["H"]}
 
 # Get hillshade for reference surface
@@ -256,12 +270,12 @@ if np.max(cranges_pd["vel_base"]) > 100:
 clabels = {name:[] for name in ref_names}
 # clabels["u"] = "m/yr"
 # clabels["v"] = "m/yr"
-clabels["vel"] = "(m/yr)"
+clabels["vel"] = "(m yr$^\mathrm{-1}$)"
 # clabels["u_base"] = "m/yr"
 # clabels["v_base"] = "m/yr"
-clabels["vel_base"] = "(m/yr)"
+clabels["vel_base"] = "(m yr$^\mathrm{-1}$)"
 clabels["hs"] = ""
-clabels["C"] = "($Pa^{1/2} m^{-1/6} s^{1/6}$)"
+clabels["C"] = "(Pa$^\mathrm{1/2}$ m$^\mathrm{-1/6}$ s$^\mathrm{1/6}$)"
 clabels["bed_elev"] = "(m)"
 
 cmaps = {name:[] for name in ref_names}
@@ -280,7 +294,7 @@ cols = len(ref_names)
 # Make the plots
 import string
 
-titles = {"vel":"Velocity", "vel_base":"Basal velocity", "hs":"Surface hillshade", "C":"Basal friction\ncoefficient",
+titles = {"vel":"Surface velocity", "vel_base":"Basal velocity", "hs":"Surface hillshade", "C":"Basal friction\ncoefficient",
           "bed_elev":"Bed elevation\n(GrIMP - H)"}
 extends = {"vel":"max", "vel_base":"max", "hs":"neither","C":"both","bed_elev":"both"}
 
@@ -290,8 +304,8 @@ plt.rcParams["font.family"] = "sans-serif"
 plt.rcParams["font.size"] = 12
 
 # for ax, name in zip(axs.ravel(), ref_data.keys()):
-fig, axs = plt.subplots(3, cols, figsize=(14,8),dpi=300)
-fig.subplots_adjust(left=0.1, hspace=0.0, wspace=0.45)
+fig, axs = plt.subplots(3, cols, figsize=(12,6),dpi=150,layout='constrained')
+# fig.subplots_adjust(left=0.1, hspace=0.0, wspace=0.45)
 for ax, name in zip(axs[0], ref_data_plot.keys()):
     vr = cranges.setdefault(name, [None, None])
     im = ax.imshow(ref_data_plot[name], interpolation='nearest', cmap=cmaps[name],
@@ -301,8 +315,9 @@ for ax, name in zip(axs[0], ref_data_plot.keys()):
     ax.set_title(titles[name])
     ax.tick_params(left = False, right = False , labelleft = False ,
                    labelbottom = False, bottom = False)
-    cbar = plt.colorbar(im, ax=ax, fraction=0.05, location="right", pad=0.02, extend = extends[name], ticks=vr) 
-    
+    if len(clabels[name]) > 0:
+        cbar = plt.colorbar(im, ax=ax, fraction=0.048, location="right", pad=0.02, extend = extends[name], ticks=vr)
+
 
 for ax, name in zip(axs[1], ref_data_plot.keys()):
     vr = cranges.setdefault(name, [None, None])
@@ -311,10 +326,11 @@ for ax, name in zip(axs[1], ref_data_plot.keys()):
                    vmin=vr[0], vmax=vr[1],
                    origin='lower', aspect='equal')
     # ax.set_title(name+"_pred")
-    ax.tick_params(left = False, right = False , labelleft = False , 
+    ax.tick_params(left = False, right = False , labelleft = False ,
                    labelbottom = False, bottom = False)
-    cbar = fig.colorbar(im, ax=ax, fraction=0.05, location="right", extend = extends[name], ticks=vr) 
-    cbar.ax.set_title(clabels[name])
+    if len(clabels[name]) > 0:
+        cbar = fig.colorbar(im, ax=ax, fraction=0.048, location="right", extend = extends[name], ticks=vr)
+        cbar.ax.set_title(clabels[name],fontsize='medium')
 
 # fig, axs = plt.subplots(math.floor(n/cols), cols, figsize=(12,9))
 for ax, name in zip(axs[2], perc_diff.keys()):
@@ -325,48 +341,62 @@ for ax, name in zip(axs[2], perc_diff.keys()):
                    aspect='equal', origin='lower')
     ax.tick_params(left = False, right = False , labelleft = False ,
                    labelbottom = False, bottom = False)
-    cbar = fig.colorbar(im, ax=ax, fraction = 0.05, location="right", extend="both",ticks=vr) 
-    cbar.ax.set_title("(%)") #, y=1.15, rotation=0)
+    cbar = fig.colorbar(im, ax=ax, fraction = 0.048, location="right", extend="both",ticks=vr)
+    cbar.ax.set_title("(%)",fontsize='medium') #, y=1.15, rotation=0)
 
 axs[0,0].set_ylabel("Observations/\nmodel reference")
 axs[1,0].set_ylabel("Prediction")
 axs[2,0].set_ylabel("Relative difference")
 
 for ax, label in zip(axs.ravel(), alphabet):
-    ax.annotate("("+label+")",
+    ax.annotate(label,
     xy=(0, 1), xycoords='axes fraction',
     xytext=(+0.5, -0.5), textcoords='offset fontsize',
     fontsize='small', verticalalignment='top', fontfamily='serif',
-    bbox=dict(facecolor='1.0', edgecolor='none', pad=2.0,alpha=0.7))
+    bbox=dict(facecolor='1.0', edgecolor='none', pad=1.0,alpha=0.7))
 
-# plt.savefig(hp["save_path"]+"/2Dsolutions")
-
-plt.savefig(experiment.params.param_dict["save_path"]+"/2Dsolutions")
+if 'hp' in locals():
+    plt.savefig(hp["save_path"]+"/2Dsolutions")
+else:
+    plt.savefig(experiment.params.param_dict["save_path"]+"/2Dsolutions")
 
 
 # Plot history on one axis
 from pinnicle.utils.history import load_dict_from_json
-experiment.history = load_dict_from_json("./PINNs/Ryder_issm2024-Dec-19_3_pinn25-Jan-09_L1","history.json")
 
+# Plot Loss History on one axis
 plt.rcParams["font.family"] = "sans-serif"
 plt.rcParams["font.size"] = 8
 
-loss_keys = [k for k in experiment.history.keys() if k != "steps"]
+if 'hp' in locals():
+    print('Using already loaded history')
+    history = experiment.history.history
+    # loss_keys = [k for k in experiment.history.history.keys() if k != "steps"]
+else:
+    print('Loading history')
+    history = load_dict_from_json(model_path,"history.json")
+    # loss_keys = [k for k in experiment.history.keys() if k != "steps"]
 
-fig = plt.figure(dpi = 300) 
-plt.plot(experiment.history['fMOLHO 1'], "k-", label="MOLHO PDE 1", linewidth=2)
-plt.plot(experiment.history['fMOLHO 2'], label="MOLHO PDE 2", linestyle="-", c='0.4', linewidth=2)
-plt.plot(experiment.history['fMOLHO base 1'], "k--", label="MOLHO base PDE 1", linewidth=2)
-plt.plot(experiment.history['fMOLHO base 2'], label="MOLHO base PDE 2", linestyle="--",linewidth=2, c='0.4')
-plt.plot(experiment.history['u'], label='Surface velocity (x-component)', linewidth=4, c=[0.85,0.33,0.10])
-plt.plot(experiment.history['v'], label='Surface velocity (y-component)', linewidth=4, c=[0.69,0.16,0.69])
-plt.plot(experiment.history['s'], label='Surface elevation', linewidth=6, c=[0.58,0.39,0.39])
-plt.plot(experiment.history['H'], label='Ice thickness', linewidth=4, c='g', linestyle=":")
-plt.plot(experiment.history['C'], label='Basal friction coefficient', linewidth=4, linestyle="-.", c=[0.30,0.75,0.93])
+
+
+fig = plt.figure(dpi = 150) 
+plt.plot(history['fMOLHO 1'], "k-", label="MOLHO PDE 1", linewidth=2)
+plt.plot(history['fMOLHO 2'], label="MOLHO PDE 2", linestyle="-", c='0.4', linewidth=2)
+plt.plot(history['fMOLHO base 1'], "k--", label="MOLHO base PDE 1", linewidth=2)
+plt.plot(history['fMOLHO base 2'], label="MOLHO base PDE 2", linestyle="--",linewidth=2, c='0.4')
+plt.plot(history['u'], label='Surface velocity (x-component)', linewidth=4, c='#d7191c')
+plt.plot(history['v'], label='Surface velocity (y-component)', linewidth=4, c='#fc8d59')
+plt.plot(history['s'], label='Surface elevation', linewidth=6, c='#fee090')
+plt.plot(history['H'], label='Ice thickness', linewidth=4, c='#abd9e9', linestyle=":")
+plt.plot(history['C'], label='Basal friction coefficient', linewidth=4, linestyle="-.", c='#2c7bb6')
 
 plt.legend(loc=1,fontsize='small')
 plt.yscale('log')
 plt.xlabel('Steps (*10^4)')
-plt.ylabel('Loss function value')
+plt.ylabel('Loss function')
 
-plt.savefig(experiment.params.param_dict["save_path"]+"/History_1ax")
+if 'hp' in locals():
+    plt.savefig(hp["save_path"]+"/History_1ax")
+else:
+    plt.savefig(experiment.params.param_dict["save_path"]+"/History_1ax")
+
