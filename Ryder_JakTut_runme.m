@@ -538,4 +538,4 @@ yts				= 60*60*24*365;
 md_u_base = md_u_base/yts;
 md_v_base = md_v_base/yts;
 
-save(strcat(PINNICLE_path,Region,'_vel_base_ms.mat'))
+save(strcat(PINNICLE_path,Region,'_vel_base_ms.mat'),'x','y','md_u_base','md_v_base','-v7.3')
