@@ -34,6 +34,20 @@ Tile_ymin					= Tiles(Tile_idx).Y(1) * 1e3;
 Tile_ymax					= Tiles(Tile_idx).Y(2) * 1e3;
 Tile_XY_pos					= [Tile_xmin, Tile_ymin; Tile_xmax, Tile_ymin; Tile_xmax, Tile_ymax; Tile_xmin, Tile_ymax; Tile_xmin, Tile_ymin];
 
+
+% Write .exp file
+domainFilename				= strcat(Region,'_',Tile,'.exp');
+if ~exist(domainFilename, 'file')
+	fileID					= fopen(domainFilename,'w');
+	fprintf(fileID, '## Name:domainoutline\n');
+	fprintf(fileID, '## Icon:0\n');
+	fprintf(fileID, '# Points Count Value\n');
+	fprintf(fileID, '5 1.\n');
+	fprintf(fileID, '# X pos Y pos\n');
+	fprintf(fileID, '%d %d\n',Tile_XY_pos');
+	fclose(fileID);
+end
+
 % Define desired model domain
 Res							= 5e2;
 Lx							= Tile_xmax - Tile_xmin;
@@ -45,13 +59,13 @@ end
 flow_eq						= 'HO';
 
 FrictionLaw					= 'Weertman';
-Friction_guess				= e3;
+Friction_guess				= 2e3;
 cost_fns					= [101 103];
 cost_fns_coeffs				= [40, 1];
 
 Gn							= 3;
 
-nsteps						= 200;
+nsteps						= 100;
 maxiter_per_step			= 20;
 
 %%
@@ -299,12 +313,12 @@ end
 	% mds=loadmodel(mdSaveName);
 	% 
 	f1 = figure; plotmodel(mds,'unit#all','km','axis#all','equal',...
-		'data',mds.inversion.vel_obs,'title','Observed velocity',...
-		'data',mds.results.StressbalanceSolution.Vel,'title','Modeled Velocity',...
+		'data',mds.inversion.vel_obs,'layer',1,'title','Observed velocity',...
+		'data',mds.results.StressbalanceSolution.Vel,'layer',1,'title','Modeled Velocity',...
 		'colorbar#1','off','colorbartitle#2','(m/yr)',...
 		'caxis#1',[0,150],...
-		'data',mds.geometry.base,'title','Base elevation',...
-		'data',mds.friction.C,...
+		'data',mds.geometry.base,'layer',2,'title','Base elevation',...
+		'data',mds.friction.C,'layer',2,...
 		'title','Friction Coefficient',...
 		'colorbartitle#3','(m)', 'figure', f1);
 
@@ -468,9 +482,79 @@ thickness					= nan * ones(length(x),1);
 for ii = 1:length(ku)
     thickness(ii,1)				= median(OIBc.thickq(ki == ku(ii)), 'omitnan'); % Median of all points with this index  
 end
-
+yts				= 60*60*24*365;
+thickness = thickness / yts;
 
 
 save(strcat('/Users/achartra/Library/CloudStorage/OneDrive-NASA/Greenland-scape/GreenlandScape_PINNICLE/',Region,'_xyz_ds.mat'), 'x', 'y', 'thickness', '-v7.3')
 
 clear kx ky ki ku ii OIBf
+
+
+%% Get basal velocity estimates
+
+Path2dataGS					= '/Users/achartra/Library/CloudStorage/OneDrive-NASA/Greenland-scape/Data/';
+% Get beta
+beta						= readGeotiff(strcat(Path2dataGS,'SIA_Results/SIA_Results_slopeflow/GrIS_SIA_beta_150m.tif'));
+beta.y						= flipud(beta.y(:));
+beta.z						= flipud(beta.z);
+% Get mask
+Mask						= readGeotiff(strcat(Path2dataGS,'GrIS_BM5_ice_sheet_mask_150m.tif'));
+Mask.y						= flipud(Mask.y(:));
+mask_gris					= flipud(Mask.z);
+% Get velocities
+[velx_all, R]				= readgeoraster(strcat(Path2dataGS,'AMC_test/GrIS_Meas_250m_AvgSurfVel_speed_x_filt_150m.tif'));
+vely_all					= readgeoraster(strcat(Path2dataGS,'AMC_test/GrIS_Meas_250m_AvgSurfVel_speed_y_filt_150m.tif'));
+vel_all						= readgeoraster(strcat(Path2dataGS,'AMC_test/GrIS_Meas_250m_AvgSurfVel_speed_filt_150m.tif'));
+velx_all					= flipud(velx_all);
+vely_all					= flipud(vely_all);
+vel_all						= flipud(vel_all);
+velx_all(~mask_gris)		= NaN;
+vely_all(~mask_gris)		= NaN;
+vel_all(~mask_gris)			= NaN;
+
+% Get PINNICLE data for mesh
+Region						= 'Ryder';
+PINNICLE_path				= '/Users/achartra/Library/CloudStorage/OneDrive-NASA/Greenland-scape/GreenlandScape_PINNICLE/';
+ISSM_run					= 'Ryder_issm2024-Dec-19_3';
+ISSM_file					= strcat(PINNICLE_path,'Models/', ISSM_run, '.mat');
+load(ISSM_file,'md')
+md.mesh						= mesh2d(md.mesh);
+
+
+% Estimate basal velocity
+vel_base_all				= vel_all .* beta.z;
+u_base_all					= velx_all .* beta.z;
+v_base_all					= vely_all .* beta.z;
+
+% Subset basal velocity
+nx							= beta.x > x_min & beta.x < x_max;
+ny							= beta.y > y_min & beta.y < y_max;
+vel_base					= vel_base_all(ny, nx);
+u_base						= u_base_all(ny, nx);
+v_base						= v_base_all(ny, nx);
+
+% Subset surface velocity
+vel							= vel_all(ny, nx);
+velx						= velx_all(ny, nx);
+vely						= vely_all(ny, nx);
+
+vel1						= sqrt(velx.^2 + vely.^2);
+
+
+vel_base1					= sqrt((u_base).^2 + (v_base).^2);
+
+
+% Interpolate to mesh
+x1 = beta.x(nx);
+y1 = beta.y(ny);
+md_u_base = InterpFromGridToMesh(x1,y1,u_base,md.mesh.x,md.mesh.y,0);
+md_v_base = InterpFromGridToMesh(x1,y1,v_base,md.mesh.x,md.mesh.y,0);
+
+
+yts				= 60*60*24*365;
+
+md_u_base = md_u_base/yts;
+md_v_base = md_v_base/yts;
+
+save(strcat(PINNICLE_path,Region,'_vel_base_ms.mat'))

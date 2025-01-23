@@ -489,3 +489,53 @@ thickness = thickness / yts;
 save(strcat('/Users/achartra/Library/CloudStorage/OneDrive-NASA/Greenland-scape/GreenlandScape_PINNICLE/',Region,'_xyz_ds.mat'), 'x', 'y', 'thickness', '-v7.3')
 
 clear kx ky ki ku ii OIBf
+
+
+%% Get basal velocity estimates
+
+Path2dataGS					= '/Users/achartra/Library/CloudStorage/OneDrive-NASA/Greenland-scape/Data/';
+% Get beta
+beta						= readGeotiff(strcat(Path2dataGS,'SIA_Results/SIA_Results_slopeflow/GrIS_SIA_beta_150m.tif'));
+beta.y						= flipud(beta.y(:));
+beta.z						= flipud(beta.z);
+% Get mask
+Mask						= readGeotiff(strcat(Path2dataGS,'GrIS_BM5_ice_sheet_mask_150m.tif'));
+Mask.y						= flipud(Mask.y(:));
+mask_gris					= flipud(Mask.z);
+% Get velocities
+[velx, R]				= readgeoraster(strcat(Path2dataGS,'AMC_test/GrIS_Meas_250m_AvgSurfVel_speed_x_filt_150m.tif'));
+vely					= readgeoraster(strcat(Path2dataGS,'AMC_test/GrIS_Meas_250m_AvgSurfVel_speed_y_filt_150m.tif'));
+vel						= readgeoraster(strcat(Path2dataGS,'AMC_test/GrIS_Meas_250m_AvgSurfVel_speed_filt_150m.tif'));
+velx					= flipud(velx);
+vely					= flipud(vely);
+vel						= flipud(vel);
+velx(~mask_gris)		= NaN;
+vely(~mask_gris)		= NaN;
+vel(~mask_gris)			= NaN;
+
+% Get PINNICLE data for mesh
+Region						= 'UpJak';
+PINNICLE_path				= '/Users/achartra/Library/CloudStorage/OneDrive-NASA/Greenland-scape/GreenlandScape_PINNICLE/';
+ISSM_run					= 'UpperJakobshavn_issm2025-Jan-17_1';
+ISSM_file					= strcat(PINNICLE_path,'Models/', ISSM_run, '.mat');
+load(ISSM_file,'md')
+md.mesh						= mesh2d(md.mesh);
+
+
+% Estimate basal velocity
+vel_base					= vel .* beta.z;
+u_base						= velx .* beta.z;
+v_base						= vely .* beta.z;
+
+
+% Interpolate to mesh
+md_u_base = InterpFromGridToMesh(beta.x,beta.y,u_base,md.mesh.x,md.mesh.y,0);
+md_v_base = InterpFromGridToMesh(beta.x,beta.y,v_base,md.mesh.x,md.mesh.y,0);
+
+
+yts				= 60*60*24*365;
+
+md_u_base = md_u_base/yts;
+md_v_base = md_v_base/yts;
+
+save(strcat(PINNICLE_path,Region,'_vel_base_ms.mat'))
