@@ -514,23 +514,31 @@ vely(~mask_gris)		= NaN;
 vel(~mask_gris)			= NaN;
 
 % Get PINNICLE data for mesh
-Region						= 'UpJak';
+Region						= 'Ryder';
 PINNICLE_path				= '/Users/achartra/Library/CloudStorage/OneDrive-NASA/Greenland-scape/GreenlandScape_PINNICLE/';
-ISSM_run					= 'UpperJakobshavn_issm2025-Jan-17_1';
+ISSM_run					= 'Ryder_issm2024-Dec-19_3';
 ISSM_file					= strcat(PINNICLE_path,'Models/', ISSM_run, '.mat');
 load(ISSM_file,'md')
 md.mesh						= mesh2d(md.mesh);
 
+[x_min, x_max]				= deal(min(md.mesh.x), max(md.mesh.x));
+y_min = min(md.mesh.y); y_max = max(md.mesh.y);
+nx = beta.x >= x_min & beta.x <= x_max;
+ny = beta.y >= y_min & beta.y <= y_max; 
+
+ss_beta						= smoothdata2(beta.z(ny, nx),'gaussian',200);
+x						= beta.x(nx);
+y						= beta.y(ny);
 
 % Estimate basal velocity
-vel_base					= vel .* beta.z;
-u_base						= velx .* beta.z;
-v_base						= vely .* beta.z;
+vel_base					= vel(ny, nx) .* ss_beta;
+u_base						= velx(ny, nx) .* ss_beta;
+v_base						= vely(ny, nx) .* ss_beta;
 
 
 % Interpolate to mesh
-md_u_base = InterpFromGridToMesh(beta.x,beta.y,u_base,md.mesh.x,md.mesh.y,0);
-md_v_base = InterpFromGridToMesh(beta.x,beta.y,v_base,md.mesh.x,md.mesh.y,0);
+md_u_base = InterpFromGridToMesh(x,y,u_base,md.mesh.x,md.mesh.y,0);
+md_v_base = InterpFromGridToMesh(x,y,v_base,md.mesh.x,md.mesh.y,0);
 
 
 yts				= 60*60*24*365;
