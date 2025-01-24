@@ -23,7 +23,7 @@ hp = {}
 # Define domain of computation
 hp["shapefile"] = "./Ryder_32_09.exp"
 # Define hyperparameters
-hp["epochs"] = int(4e5)
+hp["epochs"] = int(5e5)
 hp["learning_rate"] = 0.001
 hp["loss_function"] = "MSE"
 
