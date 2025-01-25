@@ -23,7 +23,7 @@ hp = {}
 # Define domain of computation
 hp["shapefile"] = "./Ryder_32_09.exp"
 # Define hyperparameters
-hp["epochs"] = int(5e5)
+hp["epochs"] = int(1e5)
 hp["learning_rate"] = 0.001
 hp["loss_function"] = "MSE"
 
@@ -31,9 +31,9 @@ yts = pinn.physics.Constants().yts
 data_size = 8000
 data_size_ft = 10000
 wt_uv = (1.0e-2*yts)**2.0
-wt_uvb = (1.0e-1*yts)**2.0
+wt_uvb = (1.0e-2*yts)**2.0
 wt_s = 5.0e-6
-wt_H = 1.0e-6
+wt_H = 5.0e-6
 wt_C = 1.0e-8
 
 # Load data
