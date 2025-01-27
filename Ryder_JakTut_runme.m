@@ -527,8 +527,8 @@ nx = beta.x >= x_min & beta.x <= x_max;
 ny = beta.y >= y_min & beta.y <= y_max; 
 
 ss_beta						= smoothdata2(beta.z(ny, nx),'gaussian',200);
-x						= beta.x(nx);
-y						= beta.y(ny);
+ss_x						= beta.x(nx);
+ss_y						= beta.y(ny);
 
 % Estimate basal velocity
 vel_base					= vel(ny, nx) .* ss_beta;
@@ -537,13 +537,16 @@ v_base						= vely(ny, nx) .* ss_beta;
 
 
 % Interpolate to mesh
-md_u_base = InterpFromGridToMesh(x,y,u_base,md.mesh.x,md.mesh.y,0);
-md_v_base = InterpFromGridToMesh(x,y,v_base,md.mesh.x,md.mesh.y,0);
+md_u_base = InterpFromGridToMesh(ss_x,ss_y,u_base,md.mesh.x,md.mesh.y,0);
+md_v_base = InterpFromGridToMesh(ss_x,ss_y,v_base,md.mesh.x,md.mesh.y,0);
 
 
 yts				= 60*60*24*365;
 
 md_u_base = md_u_base/yts;
 md_v_base = md_v_base/yts;
+
+x = md.mesh.x; 
+y = md.mesh.y;
 
 save(strcat(PINNICLE_path,Region,'_vel_base_ms.mat'),'x','y','md_u_base','md_v_base','-v7.3')
