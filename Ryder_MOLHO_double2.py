@@ -46,7 +46,7 @@ flightTrack["source"] = "mat"
 
 velbase = {}
 velbase["data_path"] = "./Ryder_vel_base_ms.mat"
-velbase["data_size"] = {"u_base":int(data_size/2), "v_base":int(data_size/2)}
+velbase["data_size"] = {"u_base":int(data_size), "v_base":int(data_size)}
 velbase["name_map"] = {"u_base":"md_u_base", "v_base":"md_v_base"}
 velbase["X_map"] = {"x":"x", "y":"y"}
 velbase["source"] = "mat"

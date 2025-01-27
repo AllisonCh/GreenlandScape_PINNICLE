@@ -31,7 +31,7 @@ yts = pinn.physics.Constants().yts
 data_size = 8000
 data_size_ft = 10000
 wt_uv = (1.0e-2*yts)**2.0
-wt_uvb = (1.0e-2*yts)**2.0
+wt_uvb = (5.0e-2*yts)**2.0
 wt_s = 5.0e-6
 wt_H = 5.0e-6
 wt_C = 1.0e-8
@@ -46,7 +46,7 @@ flightTrack["source"] = "mat"
 
 velbase = {}
 velbase["data_path"] = "./Ryder_vel_base_ms.mat"
-velbase["data_size"] = {"u_base":int(data_size/2), "v_base":int(data_size/2)}
+velbase["data_size"] = {"u_base":int(data_size), "v_base":int(data_size)}
 velbase["name_map"] = {"u_base":"md_u_base", "v_base":"md_v_base"}
 velbase["X_map"] = {"x":"x", "y":"y"}
 velbase["source"] = "mat"
