@@ -1,0 +1,25 @@
+Set the default float type to float64
+add Fourier feature transform to input transform
+add output transform with [-3.1709792e-04 -3.1709792e-04 -3.1709792e-06 -3.1709792e-06
+ -1.0000000e+03  1.0000000e+01  1.0000000e-02] and [3.1709792e-04 3.1709792e-04 3.1709792e-06 3.1709792e-06 4.0000000e+03
+ 4.0000000e+03 1.0000000e+04]
+Compiling model...
+'compile' took 0.005547 s
+
+Training model...
+
+Step      Train loss                                                                                                        Test loss                                                                                                         Test metric
+0         [2.42e+02, 3.39e+02, 1.48e+02, 2.12e+02, 8.64e+02, 2.87e+02, 4.04e+00, 9.22e+00, 8.53e+00, 5.32e+00, 9.10e-02]    [2.42e+02, 3.39e+02, 1.48e+02, 2.12e+02, 8.64e+02, 2.87e+02, 4.04e+00, 9.22e+00, 8.53e+00, 5.32e+00, 9.10e-02]    []  
+10000     [2.40e-03, 3.51e-03, 1.18e-02, 5.35e-02, 5.79e-03, 1.28e-02, 3.38e-03, 6.61e-03, 8.54e-02, 7.63e-02, 1.44e-03]    [2.40e-03, 3.51e-03, 1.18e-02, 5.35e-02, 5.79e-03, 1.28e-02, 3.38e-03, 6.61e-03, 8.54e-02, 7.63e-02, 1.44e-03]    []  
+20000     [2.44e-03, 3.60e-03, 1.16e-02, 4.56e-02, 5.75e-03, 1.95e-02, 2.18e-03, 4.70e-03, 6.20e-02, 5.05e-02, 1.38e-03]    [2.44e-03, 3.60e-03, 1.16e-02, 4.56e-02, 5.75e-03, 1.95e-02, 2.18e-03, 4.70e-03, 6.20e-02, 5.05e-02, 1.38e-03]    []  
+
+Best model at step 20000:
+  train loss: 2.09e-01
+  test loss: 2.09e-01
+  test metric: []
+
+'train' took 6056.204666 s
+
+Use filtered surface speed with elevation azimuth and calculate along-flow surface slope...
+Use filtered surface speed with elevation azimuth and calculate along-flow surface slope...
+Using already loaded history

@@ -16,14 +16,14 @@ dde.config.set_random_seed(1234)
 issm_filename = "Ryder_issm2024-Dec-19_3"
 datestr = datetime.now().strftime("%y-%b-%d")
 
-issm_pinn_path = issm_filename + "_pinn" + datestr + "_1G"
+issm_pinn_path = issm_filename + "_pinn" + datestr + "_2G"
 # General parameters for training
 # Setting up dictionaries: order doesn't matter, but keys DO matter
 hp = {}
 # Define domain of computation
 hp["shapefile"] = "./Ryder_32_09.exp"
 # Define hyperparameters
-hp["epochs"] = int(2e5)
+hp["epochs"] = int(5e4)
 hp["learning_rate"] = 0.001
 hp["loss_function"] = "MSE"
 
@@ -46,7 +46,7 @@ flightTrack["source"] = "mat"
 
 velbase = {}
 velbase["data_path"] = "./Ryder_vel_base_ms.mat"
-velbase["data_size"] = {"u_base":int(data_size/2), "v_base":int(data_size/2)}
+velbase["data_size"] = {"u_base":int(data_size), "v_base":int(data_size)}
 velbase["name_map"] = {"u_base":"md_u_base", "v_base":"md_v_base"}
 velbase["X_map"] = {"x":"x", "y":"y"}
 velbase["source"] = "mat"
@@ -258,7 +258,7 @@ perc_diff["bed_elev"]= ((pred_data["bed_elev"] - ref_data_plot["bed_elev"])/ref_
 cranges = {name:[np.round(np.min(ref_data_plot[name]),decimals=-1), np.round(np.max(ref_data_plot[name]),decimals=-1)] for name in ref_names}
 # cranges["u_base"] = [-10, 10]
 # cranges["v_base"] = [-10, 10]
-cranges["vel_base"] = [0, 10]
+# cranges["vel_base"] = [0, 10]
 cranges["hs"] = [0.0, 1.0]
 
 q75_pd = {name:np.quantile(np.abs(perc_diff[name]),0.75) for name in perc_diff.keys()}

@@ -31,9 +31,9 @@ yts = pinn.physics.Constants().yts
 data_size = 8000
 data_size_ft = 10000
 wt_uv = (1.0e-2*yts)**2.0
-wt_uvb = (1.0e-1*yts)**2.0
+wt_uvb = (5.0e-2*yts)**2.0
 wt_s = 5.0e-6
-wt_H = 1.0e-5
+wt_H = 5.0e-6
 wt_C = 1.0e-8
 
 # Load data
@@ -46,7 +46,7 @@ flightTrack["source"] = "mat"
 
 velbase = {}
 velbase["data_path"] = "./Ryder_vel_base_ms.mat"
-velbase["data_size"] = {"u_base":data_size, "v_base":data_size}
+velbase["data_size"] = {"u_base":int(data_size), "v_base":int(data_size)}
 velbase["name_map"] = {"u_base":"md_u_base", "v_base":"md_v_base"}
 velbase["X_map"] = {"x":"x", "y":"y"}
 velbase["source"] = "mat"
@@ -103,10 +103,10 @@ experiment.plot_predictions(X_ref=experiment.model_data.data["ISSM"].X_dict, sol
 import hdf5storage
 import scipy
 
-resolution = 150
+grid_size = 501
     # generate 200x200 mesh on the domain
-X, Y = np.meshgrid(np.linspace(experiment.params.nn.input_lb[0], experiment.params.nn.input_ub[0], resolution),
-                   np.linspace(experiment.params.nn.input_lb[1], experiment.params.nn.input_ub[1], resolution))
+X, Y = np.meshgrid(np.linspace(experiment.params.nn.input_lb[0], experiment.params.nn.input_ub[0], grid_size),
+                   np.linspace(experiment.params.nn.input_lb[1], experiment.params.nn.input_ub[1], grid_size))
 X_nn = np.hstack((X.flatten()[:,None], Y.flatten()[:,None]))
 
 # predicted solutions
@@ -258,7 +258,7 @@ perc_diff["bed_elev"]= ((pred_data["bed_elev"] - ref_data_plot["bed_elev"])/ref_
 cranges = {name:[np.round(np.min(ref_data_plot[name]),decimals=-1), np.round(np.max(ref_data_plot[name]),decimals=-1)] for name in ref_names}
 # cranges["u_base"] = [-10, 10]
 # cranges["v_base"] = [-10, 10]
-cranges["vel_base"] = [0, 10]
+# cranges["vel_base"] = [0, 10]
 cranges["hs"] = [0.0, 1.0]
 
 q75_pd = {name:np.quantile(np.abs(perc_diff[name]),0.75) for name in perc_diff.keys()}
