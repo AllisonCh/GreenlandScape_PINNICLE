@@ -521,14 +521,14 @@ ISSM_file					= strcat(PINNICLE_path,'Models/', ISSM_run, '.mat');
 load(ISSM_file,'md')
 md.mesh						= mesh2d(md.mesh);
 
-[x_min, x_max]				= deal(min(md.mesh.x), max(md.mesh.x));
-y_min = min(md.mesh.y); y_max = max(md.mesh.y);
-nx = beta.x >= x_min - 1e4 & beta.x <= x_max + 1e4;
-ny = beta.y >= y_min - 1e4 & beta.y <= y_max + 1e4; 
+% [x_min, x_max]				= deal(min(md.mesh.x), max(md.mesh.x));
+% y_min = min(md.mesh.y); y_max = max(md.mesh.y);
+% nx = beta.x >= x_min - 1e4 & beta.x <= x_max + 1e4;
+% ny = beta.y >= y_min - 1e4 & beta.y <= y_max + 1e4; 
 % 
-ss_beta						= smoothdata2(beta.z(ny, nx),'gaussian',200);
-ss_x						= beta.x(nx);
-ss_y						= beta.y(ny);
+% ss_beta						= smoothdata2(beta.z(ny, nx),'gaussian',200);
+% ss_x						= beta.x(nx);
+% ss_y						= beta.y(ny);
 % 
 % % Estimate basal velocity
 % vel_base					= vel(ny, nx) .* ss_beta;
@@ -537,7 +537,7 @@ ss_y						= beta.y(ny);
 
 
 % Interpolate to mesh
-md_beta					= InterpFromGridToMesh(ss_x,ss_y,ss_beta,md.mesh.x,md.mesh.y,0);
+md_beta					= InterpFromGridToMesh(beta.x,beta.y,beta.z,md.mesh.x,md.mesh.y,0);
 % md_u_base = InterpFromGridToMesh(ss_x,ss_y,u_base,md.mesh.x,md.mesh.y,0);
 % md_v_base = InterpFromGridToMesh(ss_x,ss_y,v_base,md.mesh.x,md.mesh.y,0);
 
@@ -552,4 +552,4 @@ md_v_base = md_v_base/yts;
 x = md.mesh.x; 
 y = md.mesh.y;
 
-save(strcat(PINNICLE_path,Region,'_vel_base_ms.mat'),'x','y','md_u_base','md_v_base','-v7.3')
+% save(strcat(PINNICLE_path,Region,'_vel_base_ms.mat'),'x','y','md_u_base','md_v_base','-v7.3')
