@@ -16,14 +16,14 @@ dde.config.set_random_seed(1234)
 issm_filename = "Ryder_issm2024-Dec-19_3"
 datestr = datetime.now().strftime("%y-%b-%d")
 
-issm_pinn_path = issm_filename + "_pinn" + datestr + "_2G"
+issm_pinn_path = issm_filename + "_pinn" + datestr + "_3G"
 # General parameters for training
 # Setting up dictionaries: order doesn't matter, but keys DO matter
 hp = {}
 # Define domain of computation
 hp["shapefile"] = "./Ryder_32_09.exp"
 # Define hyperparameters
-hp["epochs"] = int(1e5)
+hp["epochs"] = int(1.5e5)
 hp["learning_rate"] = 0.001
 hp["loss_function"] = "MSE"
 
@@ -31,7 +31,7 @@ yts = pinn.physics.Constants().yts
 data_size = 8000
 data_size_ft = 10000
 wt_uv = (1.0e-2*yts)**2.0
-wt_uvb = (5.0e-2*yts)**2.0
+wt_uvb = (1.0e-2*yts)**2.0
 wt_s = 5.0e-6
 wt_H = 5.0e-6
 wt_C = 1.0e-8
@@ -46,7 +46,7 @@ flightTrack["source"] = "mat"
 
 velbase = {}
 velbase["data_path"] = "./Ryder_vel_base_ms.mat"
-velbase["data_size"] = {"u_base":int(data_size), "v_base":int(data_size)}
+velbase["data_size"] = {"u_base":int(data_size/2), "v_base":int(data_size/2)}
 velbase["name_map"] = {"u_base":"md_u_base", "v_base":"md_v_base"}
 velbase["X_map"] = {"x":"x", "y":"y"}
 velbase["source"] = "mat"

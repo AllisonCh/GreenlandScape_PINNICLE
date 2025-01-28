@@ -1,0 +1,12 @@
+Set the default float type to float64
+add Fourier feature transform to input transform
+add output transform with [-3.1709792e-04 -3.1709792e-04 -3.1709792e-06 -3.1709792e-06
+ -1.0000000e+03  1.0000000e+01  1.0000000e-02] and [3.1709792e-04 3.1709792e-04 3.1709792e-06 3.1709792e-06 4.0000000e+03
+ 4.0000000e+03 1.0000000e+04]
+Compiling model...
+'compile' took 0.005438 s
+
+Training model...
+
+Step      Train loss                                                                                                        Test loss                                                                                                         Test metric
+0         [3.93e+01, 3.85e+01, 4.21e+01, 6.20e+01, 2.37e+02, 8.35e+02, 3.90e-02, 1.08e-01, 3.66e-01, 1.16e+01, 6.81e-02]    [3.93e+01, 3.85e+01, 4.21e+01, 6.20e+01, 2.37e+02, 8.35e+02, 3.90e-02, 1.08e-01, 3.66e-01, 1.16e+01, 6.81e-02]    []  
