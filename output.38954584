@@ -1,4 +1,4 @@
-Set the default float type to float64
+
 add Fourier feature transform to input transform
 add output transform with [-3.1709792e-04 -3.1709792e-04 -3.1709792e-06 -3.1709792e-06
  -1.0000000e+03  1.0000000e+01  1.0000000e-02] and [3.1709792e-04 3.1709792e-04 3.1709792e-06 3.1709792e-06 4.0000000e+03
