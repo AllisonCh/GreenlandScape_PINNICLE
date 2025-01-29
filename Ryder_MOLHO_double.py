@@ -23,38 +23,38 @@ hp = {}
 # Define domain of computation
 hp["shapefile"] = "./Ryder_32_09.exp"
 # Define hyperparameters
-hp["epochs"] = int(1.5e5)
+hp["epochs"] = int(2e4)
 hp["learning_rate"] = 0.001
 hp["loss_function"] = "MSE"
 
 yts = pinn.physics.Constants().yts
 data_size = 8000
-data_size_ft = 10000
+# data_size_ft = 8000
 wt_uv = (1.0e-2*yts)**2.0
 wt_uvb = (1.0e-2*yts)**2.0
-wt_s = 5.0e-6
-wt_H = 5.0e-6
+wt_s = 1.0e-6
+wt_H = 1.0e-6
 wt_C = 1.0e-8
 
 # Load data
 flightTrack = {}
 flightTrack["data_path"] = "Ryder_xyz_ds.mat"
-flightTrack["data_size"] = {"H": data_size_ft}
+flightTrack["data_size"] = {"H": data_size}
 flightTrack["X_map"] = {"x": "x", "y":"y"}
 flightTrack["name_map"] = {"H": "thickness"}
 flightTrack["source"] = "mat"
 
-velbase = {}
-velbase["data_path"] = "./Ryder_vel_base_ms.mat"
-velbase["data_size"] = {"u_base":int(data_size/2), "v_base":int(data_size/2)}
-velbase["name_map"] = {"u_base":"md_u_base", "v_base":"md_v_base"}
-velbase["X_map"] = {"x":"x", "y":"y"}
-velbase["source"] = "mat"
+# velbase = {}
+# velbase["data_path"] = "./Ryder_vel_base_ms.mat"
+# velbase["data_size"] = {"u_base":data_size, "v_base":}
+# velbase["name_map"] = {"u_base":"md_u_base", "v_base":"md_v_base"}
+# velbase["X_map"] = {"x":"x", "y":"y"}
+# velbase["source"] = "mat"
 
 issm = {}
 issm["data_path"] = "./Models/" + issm_filename + ".mat"
-issm["data_size"] = {"u":data_size, "v":data_size, "s":data_size, "H":None, "C":None}
-hp["data"] = {"ISSM":issm, "ft":flightTrack,"velbase":velbase} # hp = 'hyperparameters'
+issm["data_size"] = {"u":data_size, "v":data_size, "s":data_size, "H":None, "C":data_size}
+hp["data"] = {"ISSM":issm, "ft":flightTrack} # hp = 'hyperparameters'
 
 # Define number of collocation points used to evaluate PDE residual
 hp["num_collocation_points"] = data_size*2
@@ -210,7 +210,13 @@ yts = pinn.physics.Constants().yts
 
 # reference data
 sol_ref=experiment.model_data.data["ISSM"].data_dict
-sol_ref.update(experiment.model_data.data["velbase"].data_dict)
+if "velbase" in experiment.model_data.data.keys():
+    sol_ref.update(experiment.model_data.data["velbase"].data_dict)
+else:
+    vel_base = mat73.loadmat('Ryder_vel_base_ms.mat')
+    sol_ref['u_base'] = vel_base['md_u_base']
+    sol_ref['v_base'] = vel_base['md_v_base']
+
 ref_data = {k:griddata(X_ref, sol_ref[k].flatten(), (X, Y), method='cubic') for k in experiment.params.nn.output_variables if k in sol_ref}
 
 ref_data["u"] = yts*ref_data["u"]
