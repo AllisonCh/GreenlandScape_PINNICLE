@@ -8,6 +8,10 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 import mat73
 import math
+import os
+
+
+print(os.path.basename(__file__))
 
 # Set up some configurations
 dde.config.set_default_float('float64')
@@ -18,7 +22,7 @@ dde.config.set_random_seed(1234)
 issm_filename = "Ryder_issm2024-Dec-19_3"
 datestr = datetime.now().strftime("%y-%b-%d")
 
-issm_pinn_path = issm_filename + "_pinn" + datestr + "_2G"
+issm_pinn_path = issm_filename + "_pinn" + datestr + "_4G"
 # General parameters for training
 # Setting up dictionaries: order doesn't matter, but keys DO matter
 hp = {}
@@ -31,7 +35,7 @@ hp["loss_function"] = "MSE"
 
 yts = pinn.physics.Constants().yts
 data_size = 8000
-# data_size_ft = 10000
+data_size_ft = 10000
 wt_uv = (1.0e-2*yts)**2.0
 wt_uvb = (1.0e-2*yts)**2.0
 wt_s = 1.0e-6
@@ -41,7 +45,7 @@ wt_C = 1.0e-8
 # Load data
 flightTrack = {}
 flightTrack["data_path"] = "Ryder_xyz_ds.mat"
-flightTrack["data_size"] = {"H": data_size}
+flightTrack["data_size"] = {"H": data_size_ft}
 flightTrack["X_map"] = {"x": "x", "y":"y"}
 flightTrack["name_map"] = {"H": "thickness"}
 flightTrack["source"] = "mat"
@@ -58,12 +62,16 @@ issm["data_path"] = "./Models/" + issm_filename + ".mat"
 issm["data_size"] = {"u":data_size, "v":data_size, "s":data_size, "H":None, "C":data_size}
 hp["data"] = {"ISSM":issm, "ft":flightTrack} # hp = 'hyperparameters'
 
-issm_data = mat73.loadmat(issm["data_path"])
-max_uv = np.max(np.abs([issm_data["md"]["inversion"]["vx_obs"], issm_data["md"]["inversion"]["vx_obs"]]))
-max_uv = np.round(math.log10(max_uv))*100
-
 # Define number of collocation points used to evaluate PDE residual
 hp["num_collocation_points"] = data_size*2
+
+def roundup(x):
+    n = np.round(math.log10(x))
+    return int(math.ceil(x / 100)) * 100 if n < 2 else int(math.ceil(x / 10**n)) * 10**n
+
+issm_data = mat73.loadmat(issm["data_path"])
+max_uv = np.max(np.abs([issm_data["md"]["inversion"]["vx_obs"], issm_data["md"]["inversion"]["vx_obs"]]))
+max_uv = roundup(max_uv)
 
 # Add physics
 MOLHO = {}

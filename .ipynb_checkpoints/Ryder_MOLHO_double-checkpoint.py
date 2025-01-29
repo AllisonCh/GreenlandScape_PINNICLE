@@ -6,6 +6,12 @@ import numpy as np
 import deepxde as dde
 import matplotlib.pyplot as plt
 from datetime import datetime
+import mat73
+import math
+import os
+
+
+print(os.path.basename(__file__))
 
 # Set up some configurations
 dde.config.set_default_float('float64')
@@ -53,7 +59,7 @@ flightTrack["source"] = "mat"
 
 issm = {}
 issm["data_path"] = "./Models/" + issm_filename + ".mat"
-issm["data_size"] = {"u":data_size, "v":data_size, "s":data_size, "H":None, "C":data_size}
+issm["data_size"] = {"u":data_size, "v":data_size, "s":data_size, "H":None, "C":None}
 hp["data"] = {"ISSM":issm, "ft":flightTrack} # hp = 'hyperparameters'
 
 # Define number of collocation points used to evaluate PDE residual
