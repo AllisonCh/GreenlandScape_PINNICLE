@@ -8,7 +8,7 @@
 #SBATCH --ntasks-per-node=1           # Number of tasks per node (or -n1)
 #SBATCH --cpus-per-task=10             # Number of CPU cores per task (or -c1) 
 #SBATCH --time=5:00:00                # Maximum runtime (D-HH:MM:SS)
-#SBATCH --mail-type=END               # Send email at job completion
+#SBATCH --mail-type=END,FAIL,TIME_LIMIT_80               # Send email at job completion
 #SBATCH --mail-user=allison.chartrand@nasa.gov    # Email address for notifications
 #SBATCH --export=ALL		      # identify which env variables are propagated to launched application
 #Load necessary modules (if needed)

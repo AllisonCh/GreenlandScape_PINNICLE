@@ -59,6 +59,14 @@ hp["data"] = {"ISSM":issm, "ft":flightTrack} # hp = 'hyperparameters'
 # Define number of collocation points used to evaluate PDE residual
 hp["num_collocation_points"] = data_size*2
 
+def roundup(x):
+    n = np.round(math.log10(x))
+    return int(math.ceil(x / 100)) * 100 if n < 2 else int(math.ceil(x / 10**n)) * 10**n
+
+issm_data = mat73.loadmat(issm["data_path"])
+max_uv = np.max(np.abs([issm_data["md"]["inversion"]["vx_obs"], issm_data["md"]["inversion"]["vx_obs"]]))
+max_uv = roundup(max_uv)
+
 # Add physics
 MOLHO = {}
 MOLHO["scalar_variables"] = {"B":2e+08}
@@ -66,10 +74,10 @@ hp["equations"] = {"MOLHO":MOLHO}
 #                       # u     v       u_base  v_base  s     H      C
 MOLHO["data_weights"] = [wt_uv, wt_uv, wt_uvb, wt_uvb, wt_s, wt_H, wt_C]
 
-MOLHO["output_lb"] =    [-1.0e4/yts,         -1.0e4/yts,         -1.0e2/yts,         -1.0e2/yts,     -1.0e3,  10.0, 0.01]
-MOLHO["output_ub"] =    [1.0e4/yts,           1.0e4/yts,          1.0e2/yts,          1.0e2/yts,      4.0e3,  4.0e3, 1.0e4]
-MOLHO["variable_lb"] =  [-1.0e4/yts,         -1.0e4/yts,         -1.0e2/yts,         -1.0e2/yts,     -1.0e3,  10.0, 0.01]
-MOLHO["variable_ub"] =  [1.0e4/yts,           1.0e4/yts,          1.0e2/yts,          1.0e2/yts,      4.0e3,  4.0e3, 1.0e4]
+MOLHO["output_lb"] =    [-max_uv/yts, -max_uv/yts, -max_uv/yts, -max_uv/yts, -1.0e3,  10.0, 0.01]
+MOLHO["output_ub"] =    [max_uv/yts,  max_uv/yts,  max_uv/yts,  max_uv/yts,   4.0e3,  4.0e3, 1.0e4]
+MOLHO["variable_lb"] =  [-max_uv/yts, -max_uv/yts, -max_uv/yts, -max_uv/yts, -1.0e3,  10.0, 0.01]
+MOLHO["variable_ub"] =  [max_uv/yts,  max_uv/yts,  max_uv/yts,  max_uv/yts,   4.0e3,  4.0e3, 1.0e4]
 
 # Set NN architecture
 hp["activation"] = "tanh"
@@ -134,6 +142,7 @@ from scipy.spatial import cKDTree as KDTree
 import scipy.io as sio
 import pandas as pd
 from scipy.stats import iqr
+import mat73
 
 def shadecalc_pre(s, u, v, resolution):
     # CALCULATE SURFACE SLOPE AND ALONG-FLOW SURFACE SLOPE AND MAKE FLOW-AWARE HILLSHADE

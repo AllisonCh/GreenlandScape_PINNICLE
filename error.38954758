@@ -1,0 +1,4 @@
+  File "/panfs/ccds02/nobackup/people/achartra/GreenlandScape/GreenlandScape_PINNICLE/Ryder_MOLHO_double2.py", line 62
+    max_uv = np.max(np.abs([issm_data["md"]["inversion"]["vx_obs"], issm_data["md"]["inversion"]["vx_obs"]))
+                                                                                                          ^
+SyntaxError: closing parenthesis ')' does not match opening parenthesis '['

@@ -7,6 +7,7 @@ import deepxde as dde
 import matplotlib.pyplot as plt
 from datetime import datetime
 import mat73
+import math
 
 # Set up some configurations
 dde.config.set_default_float('float64')
@@ -58,8 +59,8 @@ issm["data_size"] = {"u":data_size, "v":data_size, "s":data_size, "H":None, "C":
 hp["data"] = {"ISSM":issm, "ft":flightTrack} # hp = 'hyperparameters'
 
 issm_data = mat73.loadmat(issm["data_path"])
-max_uv = np.max(np.abs([issm_data["md"]["inversion"]["vx_obs"], issm_data["md"]["inversion"]["vx_obs"]))
-max_uv = np.round(max_uv, decimals=-1)
+max_uv = np.max(np.abs([issm_data["md"]["inversion"]["vx_obs"], issm_data["md"]["inversion"]["vx_obs"]]))
+max_uv = np.round(math.log10(max_uv))*100
 
 # Define number of collocation points used to evaluate PDE residual
 hp["num_collocation_points"] = data_size*2
@@ -71,10 +72,10 @@ hp["equations"] = {"MOLHO":MOLHO}
 #                       # u     v       u_base  v_base  s     H      C
 MOLHO["data_weights"] = [wt_uv, wt_uv, wt_uvb, wt_uvb, wt_s, wt_H, wt_C]
 
-MOLHO["output_lb"] =    [-1.0e4/yts,         -1.0e4/yts,         -1.0e2/yts,         -1.0e2/yts,     -1.0e3,  10.0, 0.01]
-MOLHO["output_ub"] =    [1.0e4/yts,           1.0e4/yts,          1.0e2/yts,          1.0e2/yts,      4.0e3,  4.0e3, 1.0e4]
-MOLHO["variable_lb"] =  [-1.0e4/yts,         -1.0e4/yts,         -1.0e2/yts,         -1.0e2/yts,     -1.0e3,  10.0, 0.01]
-MOLHO["variable_ub"] =  [1.0e4/yts,           1.0e4/yts,          1.0e2/yts,          1.0e2/yts,      4.0e3,  4.0e3, 1.0e4]
+MOLHO["output_lb"] =    [-max_uv/yts, -max_uv/yts, -max_uv/yts, -max_uv/yts, -1.0e3,  10.0, 0.01]
+MOLHO["output_ub"] =    [max_uv/yts,  max_uv/yts,  max_uv/yts,  max_uv/yts,   4.0e3,  4.0e3, 1.0e4]
+MOLHO["variable_lb"] =  [-max_uv/yts, -max_uv/yts, -max_uv/yts, -max_uv/yts, -1.0e3,  10.0, 0.01]
+MOLHO["variable_ub"] =  [max_uv/yts,  max_uv/yts,  max_uv/yts,  max_uv/yts,   4.0e3,  4.0e3, 1.0e4]
 
 # Set NN architecture
 hp["activation"] = "tanh"
@@ -139,6 +140,7 @@ from scipy.spatial import cKDTree as KDTree
 import scipy.io as sio
 import pandas as pd
 from scipy.stats import iqr
+
 
 def shadecalc_pre(s, u, v, resolution):
     # CALCULATE SURFACE SLOPE AND ALONG-FLOW SURFACE SLOPE AND MAKE FLOW-AWARE HILLSHADE
@@ -215,7 +217,13 @@ yts = pinn.physics.Constants().yts
 
 # reference data
 sol_ref=experiment.model_data.data["ISSM"].data_dict
-sol_ref.update(experiment.model_data.data["velbase"].data_dict)
+if "velbase" in experiment.model_data.data.keys():
+    sol_ref.update(experiment.model_data.data["velbase"].data_dict)
+else:
+    vel_base = mat73.loadmat('Ryder_vel_base_ms.mat')
+    sol_ref['u_base'] = vel_base['md_u_base']
+    sol_ref['v_base'] = vel_base['md_v_base']
+
 ref_data = {k:griddata(X_ref, sol_ref[k].flatten(), (X, Y), method='cubic') for k in experiment.params.nn.output_variables if k in sol_ref}
 
 ref_data["u"] = yts*ref_data["u"]
@@ -257,7 +265,6 @@ perc_diff["vel_base"]= ((pred_data["vel_base"] - ref_data_plot["vel_base"])/ref_
 perc_diff["s"]= ((pred_data["s"] - ref_data["s"])/ref_data["s"])*100
 perc_diff["C"]= ((pred_data["C"] - ref_data_plot["C"])/ref_data_plot["C"])*100
 perc_diff["bed_elev"]= ((pred_data["bed_elev"] - ref_data_plot["bed_elev"])/ref_data_plot["bed_elev"])*100
-
 
 # Get colorbar ranges for plotting data
 cranges = {name:[np.round(np.min(ref_data_plot[name]),decimals=-1), np.round(np.max(ref_data_plot[name]),decimals=-1)] for name in ref_names}
