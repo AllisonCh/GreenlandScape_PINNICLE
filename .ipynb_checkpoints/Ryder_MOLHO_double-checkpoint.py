@@ -22,7 +22,7 @@ dde.config.set_random_seed(1234)
 issm_filename = "Ryder_issm2024-Dec-19_3"
 datestr = datetime.now().strftime("%y-%b-%d")
 
-issm_pinn_path = issm_filename + "_pinn" + datestr + "_3G"
+issm_pinn_path = issm_filename + "_pinn" + datestr + "_2G"
 # General parameters for training
 # Setting up dictionaries: order doesn't matter, but keys DO matter
 hp = {}
@@ -59,18 +59,18 @@ flightTrack["source"] = "mat"
 
 issm = {}
 issm["data_path"] = "./Models/" + issm_filename + ".mat"
-issm["data_size"] = {"u":data_size, "v":data_size, "s":data_size, "H":None, "C":None}
+issm["data_size"] = {"u":data_size, "v":data_size, "s":data_size, "H":None, "C":data_size}
 hp["data"] = {"ISSM":issm, "ft":flightTrack} # hp = 'hyperparameters'
 
 # Define number of collocation points used to evaluate PDE residual
 hp["num_collocation_points"] = data_size*2
 
 def roundup(x):
-    n = np.round(math.log10(x))
+    n = np.floor(math.log10(x))
     return int(math.ceil(x / 100)) * 100 if n < 2 else int(math.ceil(x / 10**n)) * 10**n
 
 issm_data = mat73.loadmat(issm["data_path"])
-max_uv = np.max(np.abs([issm_data["md"]["inversion"]["vx_obs"], issm_data["md"]["inversion"]["vx_obs"]]))
+max_uv = np.max(np.abs([issm_data["md"]["inversion"]["vx_obs"], issm_data["md"]["inversion"]["vy_obs"]]))
 max_uv = roundup(max_uv)
 
 # Add physics
@@ -102,7 +102,7 @@ hp["is_plot"] = True
 
 experiment = pinn.PINN(hp) # set up class PINN (in pinn.py in pinnicle package)
 # experiment.update_parameters(hp)
-# print(experiment.params) # make sure that settings are in correct spot (keys must be correct)
+print(experiment.params) # make sure that settings are in correct spot (keys must be correct)
 
 # Now run the PINN model
 experiment.compile()
@@ -113,11 +113,13 @@ experiment.train()
 # Show results
 experiment.plot_predictions(X_ref=experiment.model_data.data["ISSM"].X_dict, sol_ref=experiment.model_data.data["ISSM"].data_dict)
 
-# Save results 
+# Save results
 import hdf5storage
 import scipy
+from scipy.interpolate import griddata
 
 grid_size = 501
+
     # generate 200x200 mesh on the domain
 X, Y = np.meshgrid(np.linspace(experiment.params.nn.input_lb[0], experiment.params.nn.input_ub[0], grid_size),
                    np.linspace(experiment.params.nn.input_lb[1], experiment.params.nn.input_ub[1], grid_size))
@@ -125,15 +127,28 @@ X_nn = np.hstack((X.flatten()[:,None], Y.flatten()[:,None]))
 
 # predicted solutions
 sol_pred = experiment.model.predict(X_nn)
-# plot_data = {k+"_pred":np.reshape(sol_pred[:,i:i+1], X.shape) for i,k in enumerate(experiment.params.nn.output_variables)}
+pred_data = {k:np.reshape(sol_pred[:,i:i+1], X.shape) for i,k in enumerate(experiment.params.nn.output_variables)}
+
+# reference data
+X_ref=experiment.model_data.data["ISSM"].X_dict
+X_ref = np.hstack((X_ref['x'].flatten()[:,None],X_ref['y'].flatten()[:,None]))
+sol_ref=experiment.model_data.data["ISSM"].data_dict
+
+if "velbase" in experiment.model_data.data.keys():
+    sol_ref.update(experiment.model_data.data["velbase"].data_dict)
+
+ref_data = {k:griddata(X_ref, sol_ref[k].flatten(), (X, Y), method='cubic') for k in experiment.params.nn.output_variables if k in sol_ref}
 
 mat_data = {} # make a dictionary to store the MAT data in
-vars2save = ['sol_pred','X_nn']
+vars2save = ['pred_data','X', 'Y','ref_data']
 for i, var_curr in enumerate(vars2save):
     exec(f'mat_data[u"{var_curr}"] = {var_curr}')
+ 
+hdf5storage.savemat(hp["save_path"] + '/' + issm_pinn_path + '_predictions.mat', mat_data, format='7.3', 
+                    oned_as='row', store_python_metadata=True)
 
-hdf5storage.savemat(hp["save_path"] + '/' + issm_pinn_path + '_predictions.mat', mat_data, format='7.3', oned_as='row', store_python_metadata=True)
-
+# hdf5storage.savemat(experiment.params.param_dict["save_path"]+'/predictions1.mat', mat_data, format='7.3', 
+#                     oned_as='row', store_python_metadata=True)
 
 # Prepare plotting data - load modules and define functions
 
@@ -208,6 +223,9 @@ def shadecalc_alt(dem, resolution, az, el, zf):
     hs = (np.cos(el) * np.cos(grad)) + (np.sin(el) * np.sin(grad) * np.cos(az - asp)) # ESRI's algorithm
     hs[hs < 0] = 0 # set hillshade values to min of 0
     return hs
+
+def rmse(true_value, pred_value):
+    return np.sqrt(np.nanmean((np.array(true_value.flatten()) - np.array(pred_value.flatten())) ** 2))
 
 # Prepare plotting data - MOLHO
 
@@ -419,3 +437,21 @@ if 'hp' in locals():
     plt.savefig(hp["save_path"]+"/History_1ax")
 else:
     plt.savefig(experiment.params.param_dict["save_path"]+"/History_1ax")
+
+# RMSE for thickness
+from scipy.interpolate import interpn
+
+ft_data = mat73.loadmat('Ryder_xyz_ds.mat')
+
+ft_data["H_pred"] = griddata(np.column_stack((X.ravel(), Y.ravel())), pred_data["H"].ravel(), (ft_data['x'],ft_data['y']), method='linear')
+ft_data["H_BM5"] = griddata(np.column_stack((X.ravel(), Y.ravel())), ref_data["H"].ravel(), (ft_data['x'],ft_data['y']), method='linear')
+
+rmse_H_pred = rmse(ft_data['thickness'], ft_data["H_pred"])
+rmse_H_BM5 = rmse(ft_data['thickness'], ft_data["H_BM5"])
+
+# mask = ~np.isnan(ft_data["thickness"]) & ~np.isnan(ft_data["H_pred"])
+print(rmse_H_pred)
+print(rmse_H_BM5)
+
+rmses = {k:rmse(ref_data[k], pred_data[k]) for k in ref_data.keys()}
+print(rmses)
