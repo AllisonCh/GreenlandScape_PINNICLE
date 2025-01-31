@@ -1,0 +1,69 @@
+2025-01-31 18:45:36.651718: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-01-31 18:45:36.690941: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-01-31 18:45:36.668548: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:477] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1738367136.685784 2639382 cuda_dnn.cc:8310] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+E0000 00:00:1738367136.691296 2639382 cuda_blas.cc:1418] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+2025-01-31 18:45:36.711173: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 AVX512F AVX512_VNNI FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2025-01-31 18:45:36.708170: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:477] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1738367136.725959 2038442 cuda_dnn.cc:8310] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+E0000 00:00:1738367136.731518 2038442 cuda_blas.cc:1418] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+2025-01-31 18:45:36.750738: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 AVX512F AVX512_VNNI FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2025-01-31 18:45:36.897377: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-01-31 18:45:36.915038: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:477] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1738367136.933242 1026614 cuda_dnn.cc:8310] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+E0000 00:00:1738367136.938763 1026614 cuda_blas.cc:1418] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+2025-01-31 18:45:36.958289: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 AVX512F AVX512_VNNI FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+Using backend: tensorflow
+Other supported backends: tensorflow.compat.v1, pytorch, jax, paddle.
+paddle supports more examples now and is recommended.
+Using backend: tensorflow
+Other supported backends: tensorflow.compat.v1, pytorch, jax, paddle.
+paddle supports more examples now and is recommended.
+Using backend: tensorflow
+Other supported backends: tensorflow.compat.v1, pytorch, jax, paddle.
+paddle supports more examples now and is recommended.
+Enable just-in-time compilation with XLA.
+
+Enable just-in-time compilation with XLA.
+
+Enable just-in-time compilation with XLA.
+
+Disable just-in-time compilation with XLA.
+Disable just-in-time compilation with XLA.
+ERROR:root:ERROR: MATLAB type not supported: qmustatistics, (uint32)
+Disable just-in-time compilation with XLA.
+ERROR:root:ERROR: MATLAB type not supported: lovenumbers, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: rotational, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: solidearthsettings, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: qmustatistics, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: lovenumbers, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: rotational, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: solidearthsettings, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: qmustatistics, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: lovenumbers, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: rotational, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: solidearthsettings, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: qmustatistics, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: lovenumbers, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: rotational, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: solidearthsettings, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: qmustatistics, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: lovenumbers, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: rotational, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: solidearthsettings, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: qmustatistics, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: lovenumbers, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: rotational, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: solidearthsettings, (uint32)
+2025-01-31 18:45:40.763760: W tensorflow/core/common_runtime/gpu/gpu_bfc_allocator.cc:47] Overriding orig_value setting because the TF_FORCE_GPU_ALLOW_GROWTH environment variable is set. Original config value was 0.
+I0000 00:00:1738367140.763998 2639382 gpu_device.cc:2022] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 31134 MB memory:  -> device: 0, name: Tesla V100-SXM2-32GB, pci bus id: 0000:62:00.0, compute capability: 7.0
+2025-01-31 18:45:40.825054: W tensorflow/core/common_runtime/gpu/gpu_bfc_allocator.cc:47] Overriding orig_value setting because the TF_FORCE_GPU_ALLOW_GROWTH environment variable is set. Original config value was 0.
+I0000 00:00:1738367140.825282 2038442 gpu_device.cc:2022] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 31134 MB memory:  -> device: 0, name: Tesla V100-SXM2-32GB, pci bus id: 0000:62:00.0, compute capability: 7.0
+2025-01-31 18:45:41.058641: W tensorflow/core/common_runtime/gpu/gpu_bfc_allocator.cc:47] Overriding orig_value setting because the TF_FORCE_GPU_ALLOW_GROWTH environment variable is set. Original config value was 0.
+I0000 00:00:1738367141.058888 1026614 gpu_device.cc:2022] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 31134 MB memory:  -> device: 0, name: Tesla V100-SXM2-32GB, pci bus id: 0000:62:00.0, compute capability: 7.0

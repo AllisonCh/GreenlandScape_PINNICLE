@@ -22,21 +22,21 @@ dde.config.set_random_seed(1234)
 issm_filename = "Ryder_issm2024-Dec-19_3"
 datestr = datetime.now().strftime("%y-%b-%d")
 
-issm_pinn_path = issm_filename + "_pinn" + datestr + "_3G"
+issm_pinn_path = issm_filename + "_pinn" + datestr + "_8Ga"
 # General parameters for training
 # Setting up dictionaries: order doesn't matter, but keys DO matter
 hp = {}
 # Define domain of computation
 hp["shapefile"] = "./Ryder_32_09.exp"
 # Define hyperparameters
-hp["epochs"] = int(4e4)
+hp["epochs"] = int(2e5)
 hp["learning_rate"] = 0.001
 hp["loss_function"] = "MSE"
 
 yts = pinn.physics.Constants().yts
 data_size = 8000
 # data_size_ft = 8000
-wt_uv = 1e10
+wt_uv = 1e11
 wt_uvb = 1e11
 wt_s = 1.0e-5
 wt_H = 1.0e-6
