@@ -22,22 +22,22 @@ dde.config.set_random_seed(1234)
 issm_filename = "Ryder_issm2024-Dec-19_3"
 datestr = datetime.now().strftime("%y-%b-%d")
 
-issm_pinn_path = issm_filename + "_pinn" + datestr + "_2G"
+issm_pinn_path = issm_filename + "_pinn" + datestr + "_3G"
 # General parameters for training
 # Setting up dictionaries: order doesn't matter, but keys DO matter
 hp = {}
 # Define domain of computation
 hp["shapefile"] = "./Ryder_32_09.exp"
 # Define hyperparameters
-hp["epochs"] = int(2e4)
+hp["epochs"] = int(1.5e5)
 hp["learning_rate"] = 0.001
 hp["loss_function"] = "MSE"
 
 yts = pinn.physics.Constants().yts
 data_size = 8000
 # data_size_ft = 8000
-wt_uv = (1.0e-2*yts)**2.0
-wt_uvb = (1.0e-2*yts)**2.0
+wt_uv = 1e10 # (1.0e-2*yts)**2.0
+wt_uvb = 1e10 # (1.0e-2*yts)**2.0
 wt_s = 1.0e-6
 wt_H = 1.0e-6
 wt_C = 1.0e-8
@@ -266,6 +266,9 @@ ref_data_plot["hs"] = shadecalc_alt(ref_data["s"], resolution, ref_az + (np.pi/2
 
 ref_names = ref_data_plot.keys()
 
+# Load ft data
+ft_data = mat73.loadmat('Ryder_xyz_ds.mat')
+
 # predicted solutions
 sol_pred = experiment.model.predict(X_nn)
 pred_data = {k:np.reshape(sol_pred[:,i:i+1], X.shape) for i,k in enumerate(experiment.params.nn.output_variables)}
@@ -356,6 +359,8 @@ for ax, name in zip(axs[0], ref_data_plot.keys()):
     if len(clabels[name]) > 0:
         cbar = plt.colorbar(im, ax=ax, fraction=0.048, location="right", pad=0.02, extend = extends[name], ticks=vr)
 
+axs[0,2].scatter(ft_data['x'], ft_data['y'],s=0.1)
+
 
 for ax, name in zip(axs[1], ref_data_plot.keys()):
     vr = cranges.setdefault(name, [None, None])
@@ -441,7 +446,7 @@ else:
 # RMSE for thickness
 from scipy.interpolate import interpn
 
-ft_data = mat73.loadmat('Ryder_xyz_ds.mat')
+
 
 ft_data["H_pred"] = griddata(np.column_stack((X.ravel(), Y.ravel())), pred_data["H"].ravel(), (ft_data['x'],ft_data['y']), method='linear')
 ft_data["H_BM5"] = griddata(np.column_stack((X.ravel(), Y.ravel())), ref_data["H"].ravel(), (ft_data['x'],ft_data['y']), method='linear')
