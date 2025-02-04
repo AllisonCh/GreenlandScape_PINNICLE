@@ -10,8 +10,8 @@ Path2dataJAM				= '/Users/achartra/Library/CloudStorage/OneDrive-NASA/Greenland-
 Path2dataGS					= '/Users/achartra/Library/CloudStorage/OneDrive-NASA/Greenland-scape/Data/';
 
 % Get tile boundaries
-Tile						= '17_11'; % Ryder is 32_09; East of Jackobsavn (EGIG) is 17_11
-Region						= 'UpperJakobshavn';
+Tile						= '32_09'; % Ryder is 32_09; East of Jackobsavn (EGIG/Upper Jakobshavn) is 17_11
+Region						= 'Ryder';
 
 % Specify save names
 RunNum						= '1'; % CHANGE THIS EACH TIME!!!
@@ -459,12 +459,14 @@ OIBc.xq(Loc)						= [];
 OIBc.yq(Loc)						= [];
 OIBc.thickq(Loc)					= [];
 
-hnx							= x1 <= Tile_xmax + 150 & x1 >= Tile_xmin - 150;
-hny							= y1 <= Tile_ymax + 150 & y1 >= Tile_ymin - 150;
+mdx							= unique(md.mesh.x);
+mdy							= unique(md.mesh.y);
+hnx							= mdx <= Tile_xmax + Res & mdx >= Tile_xmin - Res;
+hny							= mdy <= Tile_ymax + Res & mdy >= Tile_ymin - Res;
 
-x_tile						= x1(hnx);
-y_tile						= y1(hny);
-h_tile						= h(hny, hnx);
+x_tile						= mdx(hnx);
+y_tile						= mdy(hny);
+% h_tile						= h(hny, hnx);
 num_x_tile					= length(x_tile);
 num_y_tile					= length(y_tile);
 
@@ -486,8 +488,8 @@ yts				= 60*60*24*365;
 thickness = thickness / yts;
 
 
-save(strcat('/Users/achartra/Library/CloudStorage/OneDrive-NASA/Greenland-scape/GreenlandScape_PINNICLE/',Region,'_xyz_ds.mat'), 'x', 'y', 'thickness', '-v7.3')
-
+save(strcat('/Users/achartra/Library/CloudStorage/OneDrive-NASA/Greenland-scape/GreenlandScape_PINNICLE/',Region,'_xyz_500.mat'), 'x', 'y', 'thickness', '-v7.3')
+% 
 clear kx ky ki ku ii OIBf
 
 
