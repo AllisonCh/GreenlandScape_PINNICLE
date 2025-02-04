@@ -22,14 +22,14 @@ dde.config.set_random_seed(1234)
 issm_filename = "Ryder_issm2024-Dec-19_3"
 datestr = datetime.now().strftime("%y-%b-%d")
 
-issm_pinn_path = issm_filename + "_pinn" + datestr + "_7G"
+issm_pinn_path = issm_filename + "_pinn" + datestr + "_1Gc"
 # General parameters for training
 # Setting up dictionaries: order doesn't matter, but keys DO matter
 hp = {}
 # Define domain of computation
 hp["shapefile"] = "./Ryder_32_09.exp"
 # Define hyperparameters
-hp["epochs"] = int(2e5)
+hp["epochs"] = int(5e4)
 hp["learning_rate"] = 0.001
 hp["loss_function"] = "MSE"
 
@@ -44,7 +44,7 @@ wt_C = 1.0e-8
 
 # Load data
 flightTrack = {}
-flightTrack["data_path"] = "Ryder_xyz_ds.mat"
+flightTrack["data_path"] = "Ryder_xyz_500.mat"
 flightTrack["data_size"] = {"H": data_size}
 flightTrack["X_map"] = {"x": "x", "y":"y"}
 flightTrack["name_map"] = {"H": "thickness"}
@@ -75,7 +75,7 @@ max_uv = roundup(max_uv)
 
 # Add physics
 MOLHO = {}
-MOLHO["scalar_variables"] = {"B":2e+08}
+MOLHO["scalar_variables"] = {"B":1e+08}
 hp["equations"] = {"MOLHO":MOLHO}
 #                       # u     v       u_base  v_base  s     H      C
 MOLHO["data_weights"] = [wt_uv, wt_uv, wt_uvb, wt_uvb, wt_s, wt_H, wt_C]
