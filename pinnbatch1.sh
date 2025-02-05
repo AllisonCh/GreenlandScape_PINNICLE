@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=pinn2025-Jan-31_4G        # Job name (or -J my_job_name)
+#SBATCH --job-name=pinn2025-Feb-04_3G        # Job name (or -J my_job_name)
 #SBATCH --output=output.%J           # Standard output file (or -o output.%j for job number to be appended)
 #SBATCH --error=error.%J             # Standard error file (or -e error.%j for job number to be appended)
 #SBATCH --gpus=1		      # Number of GPUs required for job (or -G1)
@@ -17,4 +17,4 @@ module load miniforge
 conda activate PINNICLEenv
 #Run the same task
 #Run tasks in parallel with ‘&’ and 'wait'
-python Ryder_MOLHO_H.py
+python Ryder_MOLHO_p1.py

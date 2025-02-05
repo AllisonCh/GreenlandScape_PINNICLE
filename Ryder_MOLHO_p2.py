@@ -22,14 +22,14 @@ dde.config.set_random_seed(1234)
 issm_filename = "Ryder_issm2024-Dec-19_3"
 datestr = datetime.now().strftime("%y-%b-%d")
 
-issm_pinn_path = issm_filename + "_pinn" + datestr + "_1Gb"
+issm_pinn_path = issm_filename + "_pinn" + datestr + "_6G"
 # General parameters for training
 # Setting up dictionaries: order doesn't matter, but keys DO matter
 hp = {}
 # Define domain of computation
 hp["shapefile"] = "./Ryder_32_09.exp"
 # Define hyperparameters
-hp["epochs"] = int(5e4)
+hp["epochs"] = int(1e5)
 hp["learning_rate"] = 0.001
 hp["loss_function"] = "MSE"
 
@@ -75,7 +75,7 @@ max_uv = roundup(max_uv)
 
 # Add physics
 MOLHO = {}
-MOLHO["scalar_variables"] = {"B":1e+08}
+MOLHO["scalar_variables"] = {"B":1.5e+08}
 hp["equations"] = {"MOLHO":MOLHO}
 #                       # u     v       u_base  v_base  s     H      C
 MOLHO["data_weights"] = [wt_uv, wt_uv, wt_uvb, wt_uvb, wt_s, wt_H, wt_C]
