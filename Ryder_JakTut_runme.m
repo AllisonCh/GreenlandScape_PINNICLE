@@ -484,8 +484,8 @@ thickness					= nan * ones(length(x),1);
 for ii = 1:length(ku)
     thickness(ii,1)				= median(OIBc.thickq(ki == ku(ii)), 'omitnan'); % Median of all points with this index  
 end
-yts				= 60*60*24*365;
-thickness = thickness / yts;
+% yts				= 60*60*24*365;
+% thickness = thickness / yts;
 
 
 save(strcat('/Users/achartra/Library/CloudStorage/OneDrive-NASA/Greenland-scape/GreenlandScape_PINNICLE/',Region,'_xyz_500.mat'), 'x', 'y', 'thickness', '-v7.3')
