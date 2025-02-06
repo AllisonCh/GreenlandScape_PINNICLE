@@ -1,5 +1,5 @@
 # Testing PINNICLE
-# Infer basal friction coefficients using SSA
+# Infer basal friction coefficients using MOLHO
 
 import pinnicle as pinn
 import numpy as np
@@ -11,7 +11,7 @@ import math
 import os
 
 
-print(os.path.basename(__file__))
+# print(os.path.basename(__file__))
 
 # Set up some configurations
 dde.config.set_default_float('float64')
@@ -29,7 +29,7 @@ hp = {}
 # Define domain of computation
 hp["shapefile"] = "./Ryder_32_09.exp"
 # Define hyperparameters
-hp["epochs"] = int(1e5)
+hp["epochs"] = int(4e4)
 hp["learning_rate"] = 0.001
 hp["loss_function"] = "MSE"
 
@@ -38,9 +38,10 @@ data_size = 8000
 # data_size_ft = 8000
 wt_uv = (1.0e-2*yts)**2.0
 wt_uvb = (1.0e-2*yts)**2.0
-wt_s = 5.0e-6
-wt_H = 5.0e-6
+wt_s = 1.0e-6
+wt_H = 1.0e-6
 wt_C = 1.0e-8
+wt_PDE = 1.0e-16
 
 # Load data
 flightTrack = {}
@@ -79,6 +80,8 @@ MOLHO["scalar_variables"] = {"B":2e+08}
 hp["equations"] = {"MOLHO":MOLHO}
 #                       # u     v       u_base  v_base  s     H      C
 MOLHO["data_weights"] = [wt_uv, wt_uv, wt_uvb, wt_uvb, wt_s, wt_H, wt_C]
+#                       fMOLHO 1   fMOLHO 2   fMOLHO base1  fMOLHO base2
+MOLHO["pde_weights"] = [wt_PDE,     wt_PDE,      wt_PDE,      wt_PDE]
 
 MOLHO["output_lb"] =    [-max_uv/yts, -max_uv/yts, -max_uv/yts, -max_uv/yts, -1.0e3,  10.0, 0.01]
 MOLHO["output_ub"] =    [max_uv/yts,  max_uv/yts,  max_uv/yts,  max_uv/yts,   4.0e3,  4.0e3, 1.0e4]
@@ -267,7 +270,7 @@ ref_data_plot["hs"] = shadecalc_alt(ref_data["s"], resolution, ref_az + (np.pi/2
 ref_names = ref_data_plot.keys()
 
 # Load ft data
-ft_data = mat73.loadmat('Ryder_xyz_ds.mat')
+ft_data = mat73.loadmat('Ryder_xyz_500.mat')
 
 # predicted solutions
 sol_pred = experiment.model.predict(X_nn)

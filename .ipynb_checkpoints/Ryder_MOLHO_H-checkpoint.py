@@ -1,5 +1,5 @@
 # Testing PINNICLE
-# Infer basal friction coefficients using SSA
+# Infer basal friction coefficients using MOLHO
 
 import pinnicle as pinn
 import numpy as np
