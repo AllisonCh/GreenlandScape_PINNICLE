@@ -22,7 +22,7 @@ dde.config.set_random_seed(1234)
 issm_filename = "Ryder_issm2024-Dec-19_3"
 datestr = datetime.now().strftime("%y-%b-%d")
 
-issm_pinn_path = issm_filename + "_pinn" + datestr + "_1G"
+issm_pinn_path = issm_filename + "_pinn" + datestr + "_11G"
 # General parameters for training
 # Setting up dictionaries: order doesn't matter, but keys DO matter
 hp = {}
@@ -38,8 +38,8 @@ data_size = 8000
 # data_size_ft = 8000
 wt_uv = (1.0e-2*yts)**2.0
 wt_uvb = (1.0e-2*yts)**2.0
-wt_s = 5.0e-6
-wt_H = 5.0e-6
+wt_s = 1.0e-6
+wt_H = 1.0e-6
 wt_C = 1.0e-8
 
 # Load data
@@ -50,17 +50,17 @@ flightTrack["X_map"] = {"x": "x", "y":"y"}
 flightTrack["name_map"] = {"H": "thickness"}
 flightTrack["source"] = "mat"
 
-velbase = {}
-velbase["data_path"] = "./Ryder_vel_base_ms.mat"
-velbase["data_size"] = {"u_base":data_size, "v_base":data_size}
-velbase["name_map"] = {"u_base":"md_u_base", "v_base":"md_v_base"}
-velbase["X_map"] = {"x":"x", "y":"y"}
-velbase["source"] = "mat"
+# velbase = {}
+# velbase["data_path"] = "./Ryder_vel_base_ms.mat"
+# velbase["data_size"] = {"u_base":data_size, "v_base":data_size}
+# velbase["name_map"] = {"u_base":"md_u_base", "v_base":"md_v_base"}
+# velbase["X_map"] = {"x":"x", "y":"y"}
+# velbase["source"] = "mat"
 
 issm = {}
 issm["data_path"] = "./Models/" + issm_filename + ".mat"
 issm["data_size"] = {"u":data_size, "v":data_size, "s":data_size, "H":None, "C":data_size}
-hp["data"] = {"ISSM":issm, "ft":flightTrack, "velbase":velbase} # hp = 'hyperparameters'
+hp["data"] = {"ISSM":issm, "ft":flightTrack}#, "velbase":velbase} # hp = 'hyperparameters'
 
 # Define number of collocation points used to evaluate PDE residual
 hp["num_collocation_points"] = data_size*2
@@ -75,7 +75,7 @@ max_uv = np.max(np.abs([issm_data["md"]["inversion"]["vx_obs"], issm_data["md"][
 
 # Add physics
 MOLHO = {}
-MOLHO["scalar_variables"] = {"B":2e+08}
+MOLHO["scalar_variables"] = {"B":1.0e+08}
 hp["equations"] = {"MOLHO":MOLHO}
 #                       # u     v       u_base  v_base  s     H      C
 MOLHO["data_weights"] = [wt_uv, wt_uv, wt_uvb, wt_uvb, wt_s, wt_H, wt_C]
@@ -143,7 +143,7 @@ mat_data = {} # make a dictionary to store the MAT data in
 vars2save = ['pred_data','X', 'Y','ref_data']
 for i, var_curr in enumerate(vars2save):
     exec(f'mat_data[u"{var_curr}"] = {var_curr}')
- 
+
 hdf5storage.savemat(hp["save_path"] + '/' + issm_pinn_path + '_predictions.mat', mat_data, format='7.3', 
                     oned_as='row', store_python_metadata=True)
 

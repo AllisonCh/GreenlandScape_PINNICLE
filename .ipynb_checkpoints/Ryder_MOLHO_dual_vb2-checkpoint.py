@@ -22,7 +22,7 @@ dde.config.set_random_seed(1234)
 issm_filename = "Ryder_issm2024-Dec-19_3"
 datestr = datetime.now().strftime("%y-%b-%d")
 
-issm_pinn_path = issm_filename + "_pinn" + datestr + "_1G"
+issm_pinn_path = issm_filename + "_pinn" + datestr + "_6G"
 # General parameters for training
 # Setting up dictionaries: order doesn't matter, but keys DO matter
 hp = {}
@@ -52,14 +52,14 @@ flightTrack["source"] = "mat"
 
 velbase = {}
 velbase["data_path"] = "./Ryder_vel_base_ms.mat"
-velbase["data_size"] = {"u_base":data_size, "v_base":data_size}
+velbase["data_size"] = {"u_base":int(data_size/2), "v_base":int(data_size/2)}
 velbase["name_map"] = {"u_base":"md_u_base", "v_base":"md_v_base"}
 velbase["X_map"] = {"x":"x", "y":"y"}
 velbase["source"] = "mat"
 
 issm = {}
 issm["data_path"] = "./Models/" + issm_filename + ".mat"
-issm["data_size"] = {"u":data_size, "v":data_size, "s":data_size, "H":None, "C":data_size}
+issm["data_size"] = {"u":data_size, "v":data_size, "s":data_size, "H":None, "C":None}
 hp["data"] = {"ISSM":issm, "ft":flightTrack, "velbase":velbase} # hp = 'hyperparameters'
 
 # Define number of collocation points used to evaluate PDE residual
@@ -143,7 +143,7 @@ mat_data = {} # make a dictionary to store the MAT data in
 vars2save = ['pred_data','X', 'Y','ref_data']
 for i, var_curr in enumerate(vars2save):
     exec(f'mat_data[u"{var_curr}"] = {var_curr}')
- 
+
 hdf5storage.savemat(hp["save_path"] + '/' + issm_pinn_path + '_predictions.mat', mat_data, format='7.3', 
                     oned_as='row', store_python_metadata=True)
 
