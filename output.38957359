@@ -443,3 +443,18 @@ Using already loaded history
 62.93179058772723
 {'u': 0.7386644351337328, 'v': 0.7371746396458955, 'u_base': 27.176201337522876, 'v_base': 47.05895730979448, 's': 9.051671186500336, 'H': 187.0490556610486, 'C': 287.66998630308893}
 140000    [4.86e-07, 4.26e-07, 3.68e-07, 3.93e-07, 5.67e-05, 4.82e-05, 7.32e-05, 9.30e-04, 2.17e-04]    [4.86e-07, 4.26e-07, 3.68e-07, 3.93e-07, 5.67e-05, 4.82e-05, 7.32e-05, 9.30e-04, 2.17e-04]    []  
+150000    [4.99e-07, 4.29e-07, 3.74e-07, 3.91e-07, 5.52e-05, 4.77e-05, 7.28e-05, 9.52e-04, 2.10e-04]    [4.99e-07, 4.29e-07, 3.74e-07, 3.91e-07, 5.52e-05, 4.77e-05, 7.28e-05, 9.52e-04, 2.10e-04]    []  
+
+Best model at step 140000:
+  train loss: 1.33e-03
+  test loss: 1.33e-03
+  test metric: []
+
+'train' took 38118.319022 s
+
+Use filtered surface speed with elevation azimuth and calculate along-flow surface slope...
+Use filtered surface speed with elevation azimuth and calculate along-flow surface slope...
+Using already loaded history
+33.2364568792331
+62.93179058772723
+{'u': 0.7967819145761765, 'v': 0.7842625747805198, 'u_base': 29.87665968508885, 'v_base': 51.47896325468954, 's': 9.650438341732364, 'H': 176.60187570472394, 'C': 159.25365231777127}
