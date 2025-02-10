@@ -29,7 +29,7 @@ hp = {}
 # Define domain of computation
 hp["shapefile"] = "./Ryder_32_09.exp"
 # Define hyperparameters
-hp["epochs"] = int(2e4)
+hp["epochs"] = int(4e4)
 hp["learning_rate"] = 0.001
 hp["loss_function"] = "MSE"
 
@@ -39,8 +39,8 @@ data_size = 8000
 wt_uv = (1.0e-2*yts)**2.0
 wt_uvb = (1.0e-2*yts)**2.0
 wt_s = 1.0e-6
-wt_H = 2.5e-7
-wt_C = 1.0e-8
+wt_H = 1.0e-6
+wt_C = 1.0e-7
 wt_PDE = 1.0e-16
 
 # Load data

@@ -37,10 +37,10 @@ yts = pinn.physics.Constants().yts
 data_size = 8000
 # data_size_ft = 8000
 wt_uv = (1.0e-2*yts)**2.0
-wt_uvb = (1.0e-2*yts)**2.0
+wt_uvb = (1.0e-1*yts)**2.0
 wt_s = 1.0e-6
-wt_H = 4.0e-6
-wt_C = 2.0e-8
+wt_H = 1.0e-6
+wt_C = 1.0e-8
 wt_PDE = 1.0e-16
 
 # Load data
