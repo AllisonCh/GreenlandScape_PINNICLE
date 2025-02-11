@@ -1,0 +1,88 @@
+2025-02-05 23:14:27.549137: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-02-05 23:14:27.574007: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-02-05 23:14:27.585753: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-02-05 23:14:27.565779: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:477] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1738815267.583376  422539 cuda_dnn.cc:8310] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+E0000 00:00:1738815267.588764  422539 cuda_blas.cc:1418] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+2025-02-05 23:14:27.608046: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 AVX512F AVX512_VNNI FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2025-02-05 23:14:27.591051: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:477] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1738815267.609252 1399724 cuda_dnn.cc:8310] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+E0000 00:00:1738815267.614742 1399724 cuda_blas.cc:1418] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+2025-02-05 23:14:27.603192: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:477] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1738815267.622009 3505375 cuda_dnn.cc:8310] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+E0000 00:00:1738815267.627773 3505375 cuda_blas.cc:1418] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+2025-02-05 23:14:27.634166: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 AVX512F AVX512_VNNI FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2025-02-05 23:14:27.647807: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 AVX512F AVX512_VNNI FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+Using backend: tensorflow
+Other supported backends: tensorflow.compat.v1, pytorch, jax, paddle.
+paddle supports more examples now and is recommended.
+Using backend: tensorflow
+Other supported backends: tensorflow.compat.v1, pytorch, jax, paddle.
+paddle supports more examples now and is recommended.
+Using backend: tensorflow
+Other supported backends: tensorflow.compat.v1, pytorch, jax, paddle.
+paddle supports more examples now and is recommended.
+Enable just-in-time compilation with XLA.
+
+Enable just-in-time compilation with XLA.
+
+Enable just-in-time compilation with XLA.
+
+Disable just-in-time compilation with XLA.
+Disable just-in-time compilation with XLA.
+Disable just-in-time compilation with XLA.
+ERROR:root:ERROR: MATLAB type not supported: qmustatistics, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: lovenumbers, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: rotational, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: solidearthsettings, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: qmustatistics, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: lovenumbers, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: rotational, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: solidearthsettings, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: qmustatistics, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: lovenumbers, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: rotational, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: solidearthsettings, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: qmustatistics, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: lovenumbers, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: rotational, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: solidearthsettings, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: qmustatistics, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: lovenumbers, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: rotational, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: solidearthsettings, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: qmustatistics, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: lovenumbers, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: rotational, (uint32)
+ERROR:root:ERROR: MATLAB type not supported: solidearthsettings, (uint32)
+2025-02-05 23:14:31.491260: W tensorflow/core/common_runtime/gpu/gpu_bfc_allocator.cc:47] Overriding orig_value setting because the TF_FORCE_GPU_ALLOW_GROWTH environment variable is set. Original config value was 0.
+I0000 00:00:1738815271.491496  422539 gpu_device.cc:2022] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 31134 MB memory:  -> device: 0, name: Tesla V100-SXM2-32GB, pci bus id: 0000:89:00.0, compute capability: 7.0
+2025-02-05 23:14:31.524283: W tensorflow/core/common_runtime/gpu/gpu_bfc_allocator.cc:47] Overriding orig_value setting because the TF_FORCE_GPU_ALLOW_GROWTH environment variable is set. Original config value was 0.
+I0000 00:00:1738815271.524544 1399724 gpu_device.cc:2022] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 31134 MB memory:  -> device: 0, name: Tesla V100-SXM2-32GB, pci bus id: 0000:89:00.0, compute capability: 7.0
+2025-02-05 23:14:31.706122: W tensorflow/core/common_runtime/gpu/gpu_bfc_allocator.cc:47] Overriding orig_value setting because the TF_FORCE_GPU_ALLOW_GROWTH environment variable is set. Original config value was 0.
+I0000 00:00:1738815271.706369 3505375 gpu_device.cc:2022] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 31134 MB memory:  -> device: 0, name: Tesla V100-SXM2-32GB, pci bus id: 0000:62:00.0, compute capability: 7.0
+Traceback (most recent call last):
+  File "/panfs/ccds02/nobackup/people/achartra/GreenlandScape/GreenlandScape_PINNICLE/Ryder_MOLHO_H_dw2.py", line 147, in <module>
+    hdf5storage.savemat(hp["save_path"] + '/' + issm_pinn_path + '_predictions.mat', mat_data, format='7.3',
+  File "/home/achartra/.conda/envs/PINNICLEenv/lib/python3.10/site-packages/hdf5storage/__init__.py", line 1681, in savemat
+    writes(mdict=mdict, filename=file_name,
+  File "/home/achartra/.conda/envs/PINNICLEenv/lib/python3.10/site-packages/hdf5storage/__init__.py", line 1321, in writes
+    lowlevel.write_data(f, grp, targetname, data,
+  File "/home/achartra/.conda/envs/PINNICLEenv/lib/python3.10/site-packages/hdf5storage/lowlevel.py", line 114, in write_data
+    m.write(f, grp, name, data, type_string, options)
+  File "/home/achartra/.conda/envs/PINNICLEenv/lib/python3.10/site-packages/hdf5storage/Marshallers.py", line 1628, in write
+    self.write_metadata(f, grp, name, data, type_string, options)
+  File "/home/achartra/.conda/envs/PINNICLEenv/lib/python3.10/site-packages/hdf5storage/Marshallers.py", line 1685, in write_metadata
+    set_attribute(grp2, 'MATLAB_fields', fs)
+  File "/home/achartra/.conda/envs/PINNICLEenv/lib/python3.10/site-packages/hdf5storage/utilities.py", line 955, in set_attribute
+    if not np.array_equal(value, read_matlab_fields_attribute(
+  File "/home/achartra/.conda/envs/PINNICLEenv/lib/python3.10/site-packages/numpy/core/numeric.py", line 2439, in array_equal
+    return bool(asarray(a1 == a2).all())
+ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
+srun: error: gpu008: task 0: Exited with exit code 1

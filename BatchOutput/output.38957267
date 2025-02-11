@@ -1,0 +1,352 @@
+Ryder_MOLHO_H_dw2.py
+Set the default float type to float64
+add Fourier feature transform to input transform
+add output transform with [-4.54292704e-06 -4.54292704e-06 -4.54292704e-06 -4.54292704e-06
+ -1.00000000e+03  1.00000000e+01  1.00000000e-02] and [4.54292704e-06 4.54292704e-06 4.54292704e-06 4.54292704e-06
+ 4.00000000e+03 4.00000000e+03 1.00000000e+04]
+Parameters: 
+	TrainingParameter: 
+		epochs:	100000
+		optimizer:	adam
+		loss_functions:	['MSE', 'MSE', 'MSE', 'MSE', 'MSE', 'MSE', 'MSE', 'MSE', 'MSE', 'MSE', 'MSE']
+		additional_loss:	{}
+		learning_rate:	0.001
+		loss_weights:	[1e-10, 1e-10, 1e-10, 1e-10, 99451929600.0, 99451929600.0, 99451929600.0, 99451929600.0, 1e-06, 1e-06, 1e-08]
+		has_callbacks:	False
+		min_delta:	None
+		patience:	None
+		period:	None
+		checkpoint:	False
+		save_path:	./PINNs/Ryder_issm2024-Dec-19_3_pinn25-Feb-05_12G
+		is_save:	True
+		is_plot:	True
+	DomainParameter: 
+		shapefile:	./Ryder_32_09.exp
+		num_collocation_points:	16000
+		time_dependent:	False
+		start_time:	0
+		end_time:	0
+	DataParameter: 
+		ISSM:
+			data_path:	./Models/Ryder_issm2024-Dec-19_3.mat
+			data_size:	{'u': 8000, 'v': 8000, 's': 8000, 'H': None, 'C': None}
+			name_map:	{'u': 'u', 'v': 'v', 's': 's', 'H': 'H', 'C': 'C'}
+			X_map:	{'x': 'x', 'y': 'y', 't': 't'}
+			source:	ISSM
+			default_time:	None
+
+		ft:
+			data_path:	Ryder_xyz_500.mat
+			data_size:	{'H': 8000}
+			name_map:	{'H': 'thickness'}
+			X_map:	{'x': 'x', 'y': 'y'}
+			source:	mat
+			default_time:	None
+
+		velbase:
+			data_path:	./Ryder_vel_base_ms.mat
+			data_size:	{'u_base': 8000, 'v_base': 8000}
+			name_map:	{'u_base': 'md_u_base', 'v_base': 'md_v_base'}
+			X_map:	{'x': 'x', 'y': 'y'}
+			source:	mat
+			default_time:	None
+
+	NNParameter: 
+		input_variables:	['x', 'y']
+		output_variables:	['u', 'v', 'u_base', 'v_base', 's', 'H', 'C']
+		num_neurons:	20
+		num_layers:	6
+		activation:	tanh
+		initializer:	Glorot uniform
+		fft:	True
+		num_fourier_feature:	30
+		sigma:	5
+		B:	None
+		is_parallel:	False
+		input_lb:	[ -128000. -1134000.]
+		input_ub:	[  22000. -984000.]
+		output_lb:	[-4.54292704e-06 -4.54292704e-06 -4.54292704e-06 -4.54292704e-06
+ -1.00000000e+03  1.00000000e+01  1.00000000e-02]
+		output_ub:	[4.54292704e-06 4.54292704e-06 4.54292704e-06 4.54292704e-06
+ 4.00000000e+03 4.00000000e+03 1.00000000e+04]
+		input_size:	2
+		output_size:	7
+	PhysicsParameter: 
+		MOLHO:
+			rhoi:	917.0
+			rhow:	1023.0
+			g:	9.81
+			yts:	31536000.0
+			variable_lb:	[-4.54292703799824e-06, -4.54292703799824e-06, -4.54292703799824e-06, -4.54292703799824e-06, -1000.0, 10.0, 0.01]
+			variable_ub:	[4.54292703799824e-06, 4.54292703799824e-06, 4.54292703799824e-06, 4.54292703799824e-06, 4000.0, 4000.0, 10000.0]
+			input:	['x', 'y']
+			output:	['u', 'v', 'u_base', 'v_base', 's', 'H', 'C']
+			output_lb:	[-4.54292703799824e-06, -4.54292703799824e-06, -4.54292703799824e-06, -4.54292703799824e-06, -1000.0, 10.0, 0.01]
+			output_ub:	[4.54292703799824e-06, 4.54292703799824e-06, 4.54292703799824e-06, 4.54292703799824e-06, 4000.0, 4000.0, 10000.0]
+			data_weights:	[99451929600.0, 99451929600.0, 99451929600.0, 99451929600.0, 1e-06, 1e-06, 1e-08]
+			residuals:	['fMOLHO 1', 'fMOLHO 2', 'fMOLHO base 1', 'fMOLHO base 2']
+			pde_weights:	[1e-10, 1e-10, 1e-10, 1e-10]
+			scalar_variables:	{'n': 3.0, 'B': 100000000.0}
+
+
+Compiling model...
+'compile' took 0.005401 s
+
+Ryder_MOLHO_H_dw1.py
+Set the default float type to float64
+add Fourier feature transform to input transform
+add output transform with [-4.54292704e-06 -4.54292704e-06 -4.54292704e-06 -4.54292704e-06
+ -1.00000000e+03  1.00000000e+01  1.00000000e-02] and [4.54292704e-06 4.54292704e-06 4.54292704e-06 4.54292704e-06
+ 4.00000000e+03 4.00000000e+03 1.00000000e+04]
+Parameters: 
+	TrainingParameter: 
+		epochs:	100000
+		optimizer:	adam
+		loss_functions:	['MSE', 'MSE', 'MSE', 'MSE', 'MSE', 'MSE', 'MSE', 'MSE', 'MSE']
+		additional_loss:	{}
+		learning_rate:	0.001
+		loss_weights:	[1e-10, 1e-10, 1e-10, 1e-10, 99451929600.0, 99451929600.0, 1e-06, 1e-06, 1e-08]
+		has_callbacks:	False
+		min_delta:	None
+		patience:	None
+		period:	None
+		checkpoint:	False
+		save_path:	./PINNs/Ryder_issm2024-Dec-19_3_pinn25-Feb-05_11G
+		is_save:	True
+		is_plot:	True
+	DomainParameter: 
+		shapefile:	./Ryder_32_09.exp
+		num_collocation_points:	16000
+		time_dependent:	False
+		start_time:	0
+		end_time:	0
+	DataParameter: 
+		ISSM:
+			data_path:	./Models/Ryder_issm2024-Dec-19_3.mat
+			data_size:	{'u': 8000, 'v': 8000, 's': 8000, 'H': None, 'C': 8000}
+			name_map:	{'u': 'u', 'v': 'v', 's': 's', 'H': 'H', 'C': 'C'}
+			X_map:	{'x': 'x', 'y': 'y', 't': 't'}
+			source:	ISSM
+			default_time:	None
+
+		ft:
+			data_path:	Ryder_xyz_500.mat
+			data_size:	{'H': 8000}
+			name_map:	{'H': 'thickness'}
+			X_map:	{'x': 'x', 'y': 'y'}
+			source:	mat
+			default_time:	None
+
+	NNParameter: 
+		input_variables:	['x', 'y']
+		output_variables:	['u', 'v', 'u_base', 'v_base', 's', 'H', 'C']
+		num_neurons:	20
+		num_layers:	6
+		activation:	tanh
+		initializer:	Glorot uniform
+		fft:	True
+		num_fourier_feature:	30
+		sigma:	5
+		B:	None
+		is_parallel:	False
+		input_lb:	[ -128000. -1134000.]
+		input_ub:	[  22000. -984000.]
+		output_lb:	[-4.54292704e-06 -4.54292704e-06 -4.54292704e-06 -4.54292704e-06
+ -1.00000000e+03  1.00000000e+01  1.00000000e-02]
+		output_ub:	[4.54292704e-06 4.54292704e-06 4.54292704e-06 4.54292704e-06
+ 4.00000000e+03 4.00000000e+03 1.00000000e+04]
+		input_size:	2
+		output_size:	7
+	PhysicsParameter: 
+		MOLHO:
+			rhoi:	917.0
+			rhow:	1023.0
+			g:	9.81
+			yts:	31536000.0
+			variable_lb:	[-4.54292703799824e-06, -4.54292703799824e-06, -4.54292703799824e-06, -4.54292703799824e-06, -1000.0, 10.0, 0.01]
+			variable_ub:	[4.54292703799824e-06, 4.54292703799824e-06, 4.54292703799824e-06, 4.54292703799824e-06, 4000.0, 4000.0, 10000.0]
+			input:	['x', 'y']
+			output:	['u', 'v', 'u_base', 'v_base', 's', 'H', 'C']
+			output_lb:	[-4.54292703799824e-06, -4.54292703799824e-06, -4.54292703799824e-06, -4.54292703799824e-06, -1000.0, 10.0, 0.01]
+			output_ub:	[4.54292703799824e-06, 4.54292703799824e-06, 4.54292703799824e-06, 4.54292703799824e-06, 4000.0, 4000.0, 10000.0]
+			data_weights:	[99451929600.0, 99451929600.0, 99451929600.0, 99451929600.0, 1e-06, 1e-06, 1e-08]
+			residuals:	['fMOLHO 1', 'fMOLHO 2', 'fMOLHO base 1', 'fMOLHO base 2']
+			pde_weights:	[1e-10, 1e-10, 1e-10, 1e-10]
+			scalar_variables:	{'n': 3.0, 'B': 100000000.0}
+
+
+Compiling model...
+'compile' took 0.005562 s
+
+Ryder_MOLHO_H_dw2.py
+Set the default float type to float64
+add Fourier feature transform to input transform
+add output transform with [-4.54292704e-06 -4.54292704e-06 -4.54292704e-06 -4.54292704e-06
+ -1.00000000e+03  1.00000000e+01  1.00000000e-02] and [4.54292704e-06 4.54292704e-06 4.54292704e-06 4.54292704e-06
+ 4.00000000e+03 4.00000000e+03 1.00000000e+04]
+Parameters: 
+	TrainingParameter: 
+		epochs:	100000
+		optimizer:	adam
+		loss_functions:	['MSE', 'MSE', 'MSE', 'MSE', 'MSE', 'MSE', 'MSE', 'MSE', 'MSE', 'MSE', 'MSE']
+		additional_loss:	{}
+		learning_rate:	0.001
+		loss_weights:	[1e-10, 1e-10, 1e-10, 1e-10, 99451929600.0, 99451929600.0, 99451929600.0, 99451929600.0, 1e-06, 1e-06, 1e-08]
+		has_callbacks:	False
+		min_delta:	None
+		patience:	None
+		period:	None
+		checkpoint:	False
+		save_path:	./PINNs/Ryder_issm2024-Dec-19_3_pinn25-Feb-05_12G
+		is_save:	True
+		is_plot:	True
+	DomainParameter: 
+		shapefile:	./Ryder_32_09.exp
+		num_collocation_points:	16000
+		time_dependent:	False
+		start_time:	0
+		end_time:	0
+	DataParameter: 
+		ISSM:
+			data_path:	./Models/Ryder_issm2024-Dec-19_3.mat
+			data_size:	{'u': 8000, 'v': 8000, 's': 8000, 'H': None, 'C': None}
+			name_map:	{'u': 'u', 'v': 'v', 's': 's', 'H': 'H', 'C': 'C'}
+			X_map:	{'x': 'x', 'y': 'y', 't': 't'}
+			source:	ISSM
+			default_time:	None
+
+		ft:
+			data_path:	Ryder_xyz_500.mat
+			data_size:	{'H': 8000}
+			name_map:	{'H': 'thickness'}
+			X_map:	{'x': 'x', 'y': 'y'}
+			source:	mat
+			default_time:	None
+
+		velbase:
+			data_path:	./Ryder_vel_base_ms.mat
+			data_size:	{'u_base': 8000, 'v_base': 8000}
+			name_map:	{'u_base': 'md_u_base', 'v_base': 'md_v_base'}
+			X_map:	{'x': 'x', 'y': 'y'}
+			source:	mat
+			default_time:	None
+
+	NNParameter: 
+		input_variables:	['x', 'y']
+		output_variables:	['u', 'v', 'u_base', 'v_base', 's', 'H', 'C']
+		num_neurons:	20
+		num_layers:	6
+		activation:	tanh
+		initializer:	Glorot uniform
+		fft:	True
+		num_fourier_feature:	30
+		sigma:	5
+		B:	None
+		is_parallel:	False
+		input_lb:	[ -128000. -1134000.]
+		input_ub:	[  22000. -984000.]
+		output_lb:	[-4.54292704e-06 -4.54292704e-06 -4.54292704e-06 -4.54292704e-06
+ -1.00000000e+03  1.00000000e+01  1.00000000e-02]
+		output_ub:	[4.54292704e-06 4.54292704e-06 4.54292704e-06 4.54292704e-06
+ 4.00000000e+03 4.00000000e+03 1.00000000e+04]
+		input_size:	2
+		output_size:	7
+	PhysicsParameter: 
+		MOLHO:
+			rhoi:	917.0
+			rhow:	1023.0
+			g:	9.81
+			yts:	31536000.0
+			variable_lb:	[-4.54292703799824e-06, -4.54292703799824e-06, -4.54292703799824e-06, -4.54292703799824e-06, -1000.0, 10.0, 0.01]
+			variable_ub:	[4.54292703799824e-06, 4.54292703799824e-06, 4.54292703799824e-06, 4.54292703799824e-06, 4000.0, 4000.0, 10000.0]
+			input:	['x', 'y']
+			output:	['u', 'v', 'u_base', 'v_base', 's', 'H', 'C']
+			output_lb:	[-4.54292703799824e-06, -4.54292703799824e-06, -4.54292703799824e-06, -4.54292703799824e-06, -1000.0, 10.0, 0.01]
+			output_ub:	[4.54292703799824e-06, 4.54292703799824e-06, 4.54292703799824e-06, 4.54292703799824e-06, 4000.0, 4000.0, 10000.0]
+			data_weights:	[99451929600.0, 99451929600.0, 99451929600.0, 99451929600.0, 1e-06, 1e-06, 1e-08]
+			residuals:	['fMOLHO 1', 'fMOLHO 2', 'fMOLHO base 1', 'fMOLHO base 2']
+			pde_weights:	[1e-10, 1e-10, 1e-10, 1e-10]
+			scalar_variables:	{'n': 3.0, 'B': 100000000.0}
+
+
+Compiling model...
+'compile' took 0.005679 s
+
+Training model...
+
+Step      Train loss                                                                                                        Test loss                                                                                                         Test metric
+0         [2.29e+02, 2.25e+02, 1.36e+02, 1.13e+02, 1.34e-01, 1.57e-01, 1.49e-01, 1.51e+00, 1.01e+00, 4.05e-01, 2.58e-02]    [2.29e+02, 2.25e+02, 1.36e+02, 1.13e+02, 1.34e-01, 1.57e-01, 1.49e-01, 1.51e+00, 1.01e+00, 4.05e-01, 2.58e-02]    []  
+Training model...
+
+Step      Train loss                                                                                    Test loss                                                                                     Test metric
+0         [2.75e+01, 3.39e+01, 2.09e+01, 2.06e+01, 1.14e-01, 3.42e-01, 2.48e-01, 7.62e-01, 3.40e-02]    [2.75e+01, 3.39e+01, 2.09e+01, 2.06e+01, 1.14e-01, 3.42e-01, 2.48e-01, 7.62e-01, 3.40e-02]    []  
+Training model...
+
+Step      Train loss                                                                                                        Test loss                                                                                                         Test metric
+0         [1.56e+02, 2.13e+02, 9.58e+01, 1.38e+02, 5.27e-01, 2.35e-01, 9.69e-02, 3.32e-01, 9.80e-01, 1.79e+00, 8.13e-02]    [1.56e+02, 2.13e+02, 9.58e+01, 1.38e+02, 5.27e-01, 2.35e-01, 9.69e-02, 3.32e-01, 9.80e-01, 1.79e+00, 8.13e-02]    []  
+10000     [2.77e-04, 3.24e-04, 3.00e-04, 5.64e-04, 5.03e-04, 6.45e-04, 7.19e-04, 8.19e-03, 1.19e-02]    [2.77e-04, 3.24e-04, 3.00e-04, 5.64e-04, 5.03e-04, 6.45e-04, 7.19e-04, 8.19e-03, 1.19e-02]    []  
+10000     [3.22e-03, 2.09e-03, 1.14e-03, 3.32e-03, 3.23e-03, 1.08e-02, 1.66e-04, 1.06e-03, 4.80e-02, 3.44e-02, 2.18e-03]    [3.22e-03, 2.09e-03, 1.14e-03, 3.32e-03, 3.23e-03, 1.08e-02, 1.66e-04, 1.06e-03, 4.80e-02, 3.44e-02, 2.18e-03]    []  
+10000     [5.87e-04, 1.03e-03, 1.63e-03, 5.85e-03, 9.77e-04, 1.42e-03, 1.99e-04, 1.23e-03, 4.13e-02, 9.51e-03, 5.03e-04]    [5.87e-04, 1.03e-03, 1.63e-03, 5.85e-03, 9.77e-04, 1.42e-03, 1.99e-04, 1.23e-03, 4.13e-02, 9.51e-03, 5.03e-04]    []  
+20000     [1.97e-04, 2.88e-04, 1.32e-04, 1.58e-04, 2.02e-04, 1.84e-04, 1.12e-03, 5.45e-03, 1.01e-02]    [1.97e-04, 2.88e-04, 1.32e-04, 1.58e-04, 2.02e-04, 1.84e-04, 1.12e-03, 5.45e-03, 1.01e-02]    []  
+20000     [3.37e-04, 6.12e-04, 9.66e-04, 3.96e-03, 5.46e-04, 8.07e-04, 1.62e-04, 1.06e-03, 4.61e-02, 6.37e-03, 7.65e-05]    [3.37e-04, 6.12e-04, 9.66e-04, 3.96e-03, 5.46e-04, 8.07e-04, 1.62e-04, 1.06e-03, 4.61e-02, 6.37e-03, 7.65e-05]    []  
+20000     [4.52e-04, 5.35e-04, 1.58e-03, 6.35e-03, 3.43e-04, 5.91e-04, 2.22e-04, 1.32e-03, 3.89e-02, 4.40e-03, 5.09e-05]    [4.52e-04, 5.35e-04, 1.58e-03, 6.35e-03, 3.43e-04, 5.91e-04, 2.22e-04, 1.32e-03, 3.89e-02, 4.40e-03, 5.09e-05]    []  
+30000     [1.34e-04, 1.79e-04, 1.48e-04, 1.60e-04, 1.18e-04, 1.21e-04, 1.26e-03, 4.84e-03, 9.67e-03]    [1.34e-04, 1.79e-04, 1.48e-04, 1.60e-04, 1.18e-04, 1.21e-04, 1.26e-03, 4.84e-03, 9.67e-03]    []  
+30000     [3.23e-04, 4.99e-04, 1.11e-03, 5.32e-03, 2.84e-04, 6.11e-04, 1.68e-04, 1.08e-03, 4.17e-02, 3.88e-03, 4.35e-05]    [3.23e-04, 4.99e-04, 1.11e-03, 5.32e-03, 2.84e-04, 6.11e-04, 1.68e-04, 1.08e-03, 4.17e-02, 3.88e-03, 4.35e-05]    []  
+30000     [7.03e-04, 7.20e-04, 1.08e-03, 3.95e-03, 8.39e-04, 1.27e-03, 1.63e-04, 1.05e-03, 4.58e-02, 9.26e-03, 2.33e-04]    [7.03e-04, 7.20e-04, 1.08e-03, 3.95e-03, 8.39e-04, 1.27e-03, 1.63e-04, 1.05e-03, 4.58e-02, 9.26e-03, 2.33e-04]    []  
+40000     [1.22e-04, 1.81e-04, 1.09e-04, 1.27e-04, 9.71e-05, 1.01e-04, 1.30e-03, 4.51e-03, 9.45e-03]    [1.22e-04, 1.81e-04, 1.09e-04, 1.27e-04, 9.71e-05, 1.01e-04, 1.30e-03, 4.51e-03, 9.45e-03]    []  
+40000     [4.53e-03, 1.03e-03, 1.17e-03, 2.26e-03, 5.89e-03, 1.76e-02, 1.79e-04, 1.05e-03, 4.93e-02, 7.83e+00, 6.47e-03]    [4.53e-03, 1.03e-03, 1.17e-03, 2.26e-03, 5.89e-03, 1.76e-02, 1.79e-04, 1.05e-03, 4.93e-02, 7.83e+00, 6.47e-03]    []  
+40000     [2.94e-04, 5.90e-04, 1.31e-03, 5.37e-03, 3.06e-04, 6.97e-04, 1.81e-04, 1.11e-03, 4.10e-02, 3.87e-03, 5.05e-05]    [2.94e-04, 5.90e-04, 1.31e-03, 5.37e-03, 3.06e-04, 6.97e-04, 1.81e-04, 1.11e-03, 4.10e-02, 3.87e-03, 5.05e-05]    []  
+50000     [1.13e-04, 1.68e-04, 1.03e-04, 1.21e-04, 8.73e-05, 8.75e-05, 1.31e-03, 4.34e-03, 9.36e-03]    [1.13e-04, 1.68e-04, 1.03e-04, 1.21e-04, 8.73e-05, 8.75e-05, 1.31e-03, 4.34e-03, 9.36e-03]    []  
+50000     [4.30e-03, 1.78e-03, 1.01e-03, 3.04e-03, 7.29e-03, 2.25e-02, 1.57e-04, 1.07e-03, 4.92e-02, 2.63e+00, 6.90e-03]    [4.30e-03, 1.78e-03, 1.01e-03, 3.04e-03, 7.29e-03, 2.25e-02, 1.57e-04, 1.07e-03, 4.92e-02, 2.63e+00, 6.90e-03]    []  
+50000     [1.16e-03, 1.37e-03, 1.11e-03, 3.87e-03, 1.68e-03, 2.51e-03, 1.66e-04, 1.05e-03, 4.71e-02, 1.52e-02, 1.35e-03]    [1.16e-03, 1.37e-03, 1.11e-03, 3.87e-03, 1.68e-03, 2.51e-03, 1.66e-04, 1.05e-03, 4.71e-02, 1.52e-02, 1.35e-03]    []  
+60000     [8.36e-04, 3.96e-04, 6.40e-04, 3.04e-04, 8.29e-05, 7.85e-05, 1.36e-03, 4.36e-03, 9.31e-03]    [8.36e-04, 3.96e-04, 6.40e-04, 3.04e-04, 8.29e-05, 7.85e-05, 1.36e-03, 4.36e-03, 9.31e-03]    []  
+60000     [3.18e-03, 3.82e-03, 7.46e-04, 3.07e-03, 6.87e-03, 2.02e-02, 1.67e-04, 1.07e-03, 4.93e-02, 2.57e+00, 7.64e-03]    [3.18e-03, 3.82e-03, 7.46e-04, 3.07e-03, 6.87e-03, 2.02e-02, 1.67e-04, 1.07e-03, 4.93e-02, 2.57e+00, 7.64e-03]    []  
+60000     [3.04e-04, 4.77e-04, 1.31e-03, 4.88e-03, 3.39e-04, 6.27e-04, 1.62e-04, 1.04e-03, 4.28e-02, 4.41e-03, 4.38e-05]    [3.04e-04, 4.77e-04, 1.31e-03, 4.88e-03, 3.39e-04, 6.27e-04, 1.62e-04, 1.04e-03, 4.28e-02, 4.41e-03, 4.38e-05]    []  
+70000     [1.50e-04, 2.24e-04, 9.97e-05, 1.14e-04, 7.82e-05, 6.80e-05, 1.36e-03, 4.02e-03, 9.12e-03]    [1.50e-04, 2.24e-04, 9.97e-05, 1.14e-04, 7.82e-05, 6.80e-05, 1.36e-03, 4.02e-03, 9.12e-03]    []  
+80000     [1.04e-04, 1.63e-04, 9.57e-05, 1.25e-04, 7.63e-05, 6.41e-05, 1.39e-03, 3.93e-03, 9.07e-03]    [1.04e-04, 1.63e-04, 9.57e-05, 1.25e-04, 7.63e-05, 6.41e-05, 1.39e-03, 3.93e-03, 9.07e-03]    []  
+70000     [3.83e-03, 3.51e-03, 7.32e-04, 2.38e-03, 8.31e-03, 2.37e-02, 1.65e-04, 1.04e-03, 4.94e-02, 1.66e+00, 3.61e-03]    [3.83e-03, 3.51e-03, 7.32e-04, 2.38e-03, 8.31e-03, 2.37e-02, 1.65e-04, 1.04e-03, 4.94e-02, 1.66e+00, 3.61e-03]    []  
+70000     [4.68e-03, 3.84e-03, 2.51e-03, 7.27e-03, 1.04e-02, 1.87e-02, 1.67e-04, 1.05e-03, 4.92e-02, 4.17e+01, 6.88e-03]    [4.68e-03, 3.84e-03, 2.51e-03, 7.27e-03, 1.04e-02, 1.87e-02, 1.67e-04, 1.05e-03, 4.92e-02, 4.17e+01, 6.88e-03]    []  
+90000     [1.16e-04, 1.72e-04, 9.38e-05, 1.23e-04, 7.62e-05, 6.30e-05, 1.41e-03, 3.82e-03, 8.96e-03]    [1.16e-04, 1.72e-04, 9.38e-05, 1.23e-04, 7.62e-05, 6.30e-05, 1.41e-03, 3.82e-03, 8.96e-03]    []  
+80000     [5.11e-03, 4.05e-03, 4.43e-04, 1.45e-03, 6.16e-03, 1.74e-02, 1.84e-04, 1.01e-03, 4.93e-02, 1.26e-01, 6.26e-03]    [5.11e-03, 4.05e-03, 4.43e-04, 1.45e-03, 6.16e-03, 1.74e-02, 1.84e-04, 1.01e-03, 4.93e-02, 1.26e-01, 6.26e-03]    []  
+80000     [2.49e-03, 2.26e-03, 1.65e-03, 4.66e-03, 7.15e-03, 1.88e-02, 1.67e-04, 1.05e-03, 4.92e-02, 2.65e+01, 6.54e-03]    [2.49e-03, 2.26e-03, 1.65e-03, 4.66e-03, 7.15e-03, 1.88e-02, 1.67e-04, 1.05e-03, 4.92e-02, 2.65e+01, 6.54e-03]    []  
+100000    [9.74e-04, 7.52e-04, 4.71e-04, 2.43e-04, 7.75e-05, 6.72e-05, 1.34e-03, 4.68e-03, 8.72e-03]    [9.74e-04, 7.52e-04, 4.71e-04, 2.43e-04, 7.75e-05, 6.72e-05, 1.34e-03, 4.68e-03, 8.72e-03]    []  
+
+Best model at step 90000:
+  train loss: 1.48e-02
+  test loss: 1.48e-02
+  test metric: []
+
+'train' took 25306.913100 s
+
+Use filtered surface speed with elevation azimuth and calculate along-flow surface slope...
+Use filtered surface speed with elevation azimuth and calculate along-flow surface slope...
+Using already loaded history
+71.97126189835718
+63.148267599162146
+{'u': 0.9240096335783538, 'v': 0.8648752101639702, 'u_base': 305.1889597401697, 'v_base': 322.42830439090454, 's': 36.84591775407975, 'H': 131.6645449446508, 'C': 937.0014661995981}
+90000     [2.72e-03, 1.79e-03, 7.25e-04, 3.53e-03, 2.23e-03, 2.59e-03, 1.56e-04, 1.08e-03, 4.90e-02, 9.25e-03, 2.16e-03]    [2.72e-03, 1.79e-03, 7.25e-04, 3.53e-03, 2.23e-03, 2.59e-03, 1.56e-04, 1.08e-03, 4.90e-02, 9.25e-03, 2.16e-03]    []  
+90000     [6.15e-03, 1.91e-03, 2.32e-03, 7.94e-03, 6.52e-03, 2.10e-02, 1.66e-04, 1.02e-03, 4.92e-02, 9.72e+00, 5.02e-03]    [6.15e-03, 1.91e-03, 2.32e-03, 7.94e-03, 6.52e-03, 2.10e-02, 1.66e-04, 1.02e-03, 4.92e-02, 9.72e+00, 5.02e-03]    []  
+100000    [3.75e-04, 7.96e-04, 8.74e-04, 3.59e-03, 2.41e-04, 4.68e-04, 1.48e-04, 8.48e-04, 4.49e-02, 2.92e-03, 3.92e-05]    [3.75e-04, 7.96e-04, 8.74e-04, 3.59e-03, 2.41e-04, 4.68e-04, 1.48e-04, 8.48e-04, 4.49e-02, 2.92e-03, 3.92e-05]    []  
+
+Best model at step 30000:
+  train loss: 5.50e-02
+  test loss: 5.50e-02
+  test metric: []
+
+'train' took 29137.036249 s
+
+100000    [1.72e-03, 9.42e-03, 9.67e-04, 9.25e-03, 5.26e-03, 1.77e-02, 1.75e-04, 1.10e-03, 4.92e-02, 2.30e+01, 5.06e-03]    [1.72e-03, 9.42e-03, 9.67e-04, 9.25e-03, 5.26e-03, 1.77e-02, 1.75e-04, 1.10e-03, 4.92e-02, 2.30e+01, 5.06e-03]    []  
+
+Best model at step 20000:
+  train loss: 5.48e-02
+  test loss: 5.48e-02
+  test metric: []
+
+'train' took 29176.422674 s
+
+Use filtered surface speed with elevation azimuth and calculate along-flow surface slope...
+Use filtered surface speed with elevation azimuth and calculate along-flow surface slope...
+Using already loaded history
+57.329307621095644
+63.148267599162146
+{'u': 1.614545476727612, 'v': 2.248903827719927, 'u_base': 1.1677403105678432, 'v_base': 2.9491422416791333, 's': 215.3911326986984, 'H': 352.84080105408583, 'C': 2758.861395462543}
