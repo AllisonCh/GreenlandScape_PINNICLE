@@ -22,7 +22,7 @@ dde.config.set_random_seed(1234)
 issm_filename = "Ryder_issm2024-Dec-19_3"
 datestr = datetime.now().strftime("%y-%b-%d")
 
-issm_pinn_path = issm_filename + "_pinn" + datestr + "_1G"
+issm_pinn_path = issm_filename + "_pinn" + datestr + "_8G"
 # General parameters for training
 # Setting up dictionaries: order doesn't matter, but keys DO matter
 hp = {}
@@ -37,11 +37,11 @@ yts = pinn.physics.Constants().yts
 data_size = 8000
 # data_size_ft = 8000
 wt_uv = (1.0e-2*yts)**2.0
-wt_uvb = (1.0e-2*yts)**2.0
+wt_uvb = (1.0e-1*yts)**2.0
 wt_s = 1.0e-6
-wt_H = 1.0e-6
+wt_H = 1.0e-7
 wt_C = 1.0e-8
-wt_PDE = 1.0e-16
+wt_PDE = 1.0e-14
 
 # Load data
 flightTrack = {}
@@ -362,7 +362,7 @@ for ax, name in zip(axs[0], ref_data_plot.keys()):
     if len(clabels[name]) > 0:
         cbar = plt.colorbar(im, ax=ax, fraction=0.048, location="right", pad=0.02, extend = extends[name], ticks=vr)
 
-axs[0,2].scatter(ft_data['x'], ft_data['y'],s=0.1)
+
 
 
 for ax, name in zip(axs[1], ref_data_plot.keys()):
@@ -377,6 +377,8 @@ for ax, name in zip(axs[1], ref_data_plot.keys()):
     if len(clabels[name]) > 0:
         cbar = fig.colorbar(im, ax=ax, fraction=0.048, location="right", extend = extends[name], ticks=vr)
         cbar.ax.set_title(clabels[name],fontsize='medium')
+
+axs[1,4].scatter(ft_data['x'], ft_data['y'],s=0.05)
 
 # fig, axs = plt.subplots(math.floor(n/cols), cols, figsize=(12,9))
 for ax, name in zip(axs[2], perc_diff.keys()):
@@ -406,6 +408,17 @@ if 'hp' in locals():
 else:
     plt.savefig(experiment.params.param_dict["save_path"]+"/2Dsolutions")
 
+axs[0,4].plot(ft_data['x'], ft_data['y'],'r',alpha=0.5,linewidth=0.1)
+axs[0,4].ylim = [Y.min(), Y.max()]
+
+axs[1,4].plot(ft_data['x'], ft_data['y'],'r',alpha=0.5,linewidth=0.1)
+axs[1,4].ylim = [Y.min(), Y.max()]
+
+if 'hp' in locals():
+    plt.savefig(hp["save_path"]+"/2Dsolutions")
+else:
+    plt.savefig(experiment.params.param_dict["save_path"]+"/2Dsolutions")
+    
 
 # Plot history on one axis
 from pinnicle.utils.history import load_dict_from_json

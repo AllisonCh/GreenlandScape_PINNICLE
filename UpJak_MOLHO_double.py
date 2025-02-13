@@ -28,13 +28,14 @@ hp["learning_rate"] = 0.001
 hp["loss_function"] = "MSE"
 
 yts = pinn.physics.Constants().yts
-data_size = 5000
-data_size_ft = 8000
-wt_uv = 1.0e11
-wt_uvb = 1.0e-13
-wt_s = 5.0e-6
-wt_H = 1.0e-5
+data_size = 8000
+# data_size_ft = 8000
+wt_uv = (1.0e-2*yts)**2.0
+wt_uvb = (1.0e-1*yts)**2.0
+wt_s = 1.0e-6
+wt_H = 1.0e-7
 wt_C = 1.0e-8
+wt_PDE = 1.0e-14
 
 # Load data
 flightTrack = {}
