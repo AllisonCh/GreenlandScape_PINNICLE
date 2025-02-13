@@ -10,7 +10,7 @@ Path2dataJAM				= '/Users/achartra/Library/CloudStorage/OneDrive-NASA/Greenland-
 Path2dataGS					= '/Users/achartra/Library/CloudStorage/OneDrive-NASA/Greenland-scape/Data/';
 
 % Get tile boundaries
-Tile						= '17_11'; % Ryder is 32_09; East of Jackobsavn (EGIG) is 17_11
+Tile						= '17_11'; % Ryder is 32_09; East of Jackobsavn (EGIG/Upper Jakobshavn) is 17_11
 Region						= 'UpperJakobshavn';
 
 % Specify save names
@@ -52,8 +52,8 @@ end
 Res							= 5e2;
 Lx							= Tile_xmax - Tile_xmin;
 Ly							= Tile_ymax - Tile_ymin;
-nx							= Lx / Res;
-ny							= Ly / Res;
+nx							= round(Lx / Res);
+ny							= round(Ly / Res);
 end
 
 flow_eq						= 'HO';
@@ -459,12 +459,14 @@ OIBc.xq(Loc)						= [];
 OIBc.yq(Loc)						= [];
 OIBc.thickq(Loc)					= [];
 
-hnx							= x1 <= Tile_xmax + 150 & x1 >= Tile_xmin - 150;
-hny							= y1 <= Tile_ymax + 150 & y1 >= Tile_ymin - 150;
+mdx							= unique(md.mesh.x);
+mdy							= unique(md.mesh.y);
+hnx							= mdx <= Tile_xmax + Res & mdx >= Tile_xmin - Res;
+hny							= mdy <= Tile_ymax + Res & mdy >= Tile_ymin - Res;
 
-x_tile						= x1(hnx);
-y_tile						= y1(hny);
-h_tile						= h(hny, hnx);
+x_tile						= mdx(hnx);
+y_tile						= mdy(hny);
+% h_tile						= h(hny, hnx);
 num_x_tile					= length(x_tile);
 num_y_tile					= length(y_tile);
 
@@ -482,12 +484,11 @@ thickness					= nan * ones(length(x),1);
 for ii = 1:length(ku)
     thickness(ii,1)				= median(OIBc.thickq(ki == ku(ii)), 'omitnan'); % Median of all points with this index  
 end
-yts				= 60*60*24*365;
-thickness = thickness / yts;
 
 
-save(strcat('/Users/achartra/Library/CloudStorage/OneDrive-NASA/Greenland-scape/GreenlandScape_PINNICLE/',Region,'_xyz_ds.mat'), 'x', 'y', 'thickness', '-v7.3')
 
+save(strcat('/Users/achartra/Library/CloudStorage/OneDrive-NASA/Greenland-scape/GreenlandScape_PINNICLE/',Region,'_xyz_500.mat'), 'x', 'y', 'thickness', '-v7.3')
+% 
 clear kx ky ki ku ii OIBf
 
 
@@ -516,19 +517,19 @@ beta.z						= flipud(beta.z);
 % Get PINNICLE data for mesh
 Region						= 'Ryder';
 PINNICLE_path				= '/Users/achartra/Library/CloudStorage/OneDrive-NASA/Greenland-scape/GreenlandScape_PINNICLE/';
-ISSM_run					= 'Ryder_issm2024-Dec-19_3';
+ISSM_run					= 'UpperJakobshavn_issm2025-Jan-17_1';
 ISSM_file					= strcat(PINNICLE_path,'Models/', ISSM_run, '.mat');
 load(ISSM_file,'md')
 md.mesh						= mesh2d(md.mesh);
 
-% [x_min, x_max]				= deal(min(md.mesh.x), max(md.mesh.x));
-% y_min = min(md.mesh.y); y_max = max(md.mesh.y);
-% nx = beta.x >= x_min - 1e4 & beta.x <= x_max + 1e4;
-% ny = beta.y >= y_min - 1e4 & beta.y <= y_max + 1e4; 
+[x_min, x_max]				= deal(min(md.mesh.x), max(md.mesh.x));
+y_min = min(md.mesh.y); y_max = max(md.mesh.y);
+nx = beta.x >= x_min - 1e4 & beta.x <= x_max + 1e4;
+ny = beta.y >= y_min - 1e4 & beta.y <= y_max + 1e4; 
 % 
-% ss_beta						= smoothdata2(beta.z(ny, nx),'gaussian',200);
-% ss_x						= beta.x(nx);
-% ss_y						= beta.y(ny);
+ss_beta						= smoothdata2(beta.z(ny, nx),'gaussian',200);
+ss_x						= beta.x(nx);
+ss_y						= beta.y(ny);
 % 
 % % Estimate basal velocity
 % vel_base					= vel(ny, nx) .* ss_beta;
@@ -537,7 +538,7 @@ md.mesh						= mesh2d(md.mesh);
 
 
 % Interpolate to mesh
-md_beta					= InterpFromGridToMesh(beta.x,beta.y,beta.z,md.mesh.x,md.mesh.y,0);
+md_beta					= InterpFromGridToMesh(ss_x,ss_y,ss_beta,md.mesh.x,md.mesh.y,0);
 % md_u_base = InterpFromGridToMesh(ss_x,ss_y,u_base,md.mesh.x,md.mesh.y,0);
 % md_v_base = InterpFromGridToMesh(ss_x,ss_y,v_base,md.mesh.x,md.mesh.y,0);
 
@@ -552,4 +553,4 @@ md_v_base = md_v_base/yts;
 x = md.mesh.x; 
 y = md.mesh.y;
 
-% save(strcat(PINNICLE_path,Region,'_vel_base_ms.mat'),'x','y','md_u_base','md_v_base','-v7.3')
+save(strcat(PINNICLE_path,Region,'_vel_base_ms.mat'),'x','y','md_u_base','md_v_base','-v7.3')

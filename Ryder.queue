@@ -1,2 +1,0 @@
-#!/bin/sh
-/Users/achartra/Library/CloudStorage/OneDrive-NASA/ISSM-macOS-Silicon-MATLAB/bin/mpiexec -np 4 /Users/achartra/Library/CloudStorage/OneDrive-NASA/ISSM-macOS-Silicon-MATLAB/bin/issm.exe StressbalanceSolution ./ Ryder 

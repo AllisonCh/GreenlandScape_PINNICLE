@@ -10,8 +10,8 @@ Path2dataJAM				= '/Users/achartra/Library/CloudStorage/OneDrive-NASA/Greenland-
 Path2dataGS					= '/Users/achartra/Library/CloudStorage/OneDrive-NASA/Greenland-scape/Data/';
 
 % Get tile boundaries
-Tile						= '32_09'; % Ryder is 32_09; East of Jackobsavn (EGIG/Upper Jakobshavn) is 17_11
-Region						= 'Ryder';
+Tile						= '17_11'; % Ryder is 32_09; East of Jackobsavn (EGIG/Upper Jakobshavn) is 17_11
+Region						= 'UpperJakobshavn';
 
 % Specify save names
 RunNum						= '1'; % CHANGE THIS EACH TIME!!!
@@ -52,8 +52,8 @@ end
 Res							= 5e2;
 Lx							= Tile_xmax - Tile_xmin;
 Ly							= Tile_ymax - Tile_ymin;
-nx							= Lx / Res;
-ny							= Ly / Res;
+nx							= round(Lx / Res);
+ny							= round(Ly / Res);
 end
 
 flow_eq						= 'HO';
@@ -484,8 +484,7 @@ thickness					= nan * ones(length(x),1);
 for ii = 1:length(ku)
     thickness(ii,1)				= median(OIBc.thickq(ki == ku(ii)), 'omitnan'); % Median of all points with this index  
 end
-% yts				= 60*60*24*365;
-% thickness = thickness / yts;
+
 
 
 save(strcat('/Users/achartra/Library/CloudStorage/OneDrive-NASA/Greenland-scape/GreenlandScape_PINNICLE/',Region,'_xyz_500.mat'), 'x', 'y', 'thickness', '-v7.3')
@@ -518,7 +517,7 @@ beta.z						= flipud(beta.z);
 % Get PINNICLE data for mesh
 Region						= 'Ryder';
 PINNICLE_path				= '/Users/achartra/Library/CloudStorage/OneDrive-NASA/Greenland-scape/GreenlandScape_PINNICLE/';
-ISSM_run					= 'Ryder_issm2024-Dec-19_3';
+ISSM_run					= 'UpperJakobshavn_issm2025-Jan-17_1';
 ISSM_file					= strcat(PINNICLE_path,'Models/', ISSM_run, '.mat');
 load(ISSM_file,'md')
 md.mesh						= mesh2d(md.mesh);
