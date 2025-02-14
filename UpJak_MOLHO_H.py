@@ -22,14 +22,14 @@ dde.config.set_random_seed(1234)
 issm_filename = "UpperJakobshavn_issm2025-Jan-17_1"
 datestr = datetime.now().strftime("%y-%b-%d")
 
-issm_pinn_path = issm_filename + "_pinn" + datestr + "_8G"
+issm_pinn_path = issm_filename + "_pinn" + datestr + "_2G"
 # General parameters for training
 # Setting up dictionaries: order doesn't matter, but keys DO matter
 hp = {}
 # Define domain of computation
 hp["shapefile"] = "./UpperJakobshavn_17_11.exp"
 # Define hyperparameters
-hp["epochs"] = int(4e4)
+hp["epochs"] = int(1.5e5)
 hp["learning_rate"] = 0.001
 hp["loss_function"] = "MSE"
 
@@ -45,7 +45,7 @@ wt_PDE = 1.0e-14
 
 # Load data
 flightTrack = {}
-flightTrack["data_path"] = "UpperJakobshavn_xyz_ds.mat"
+flightTrack["data_path"] = "UpperJakobshavn_xyz_500.mat"
 flightTrack["data_size"] = {"H": data_size}
 flightTrack["X_map"] = {"x": "x", "y":"y"}
 flightTrack["name_map"] = {"H": "thickness"}
