@@ -20,6 +20,9 @@ dde.config.set_random_seed(1234)
 
 # Start loading data
 issm_filename = "UpperJakobshavn_issm2025-Jan-17_1"
+shapefile_filename = "./UpperJakobshavn_17_11.exp"
+ft_filename = "./UpperJakobshavn_xyz_500.mat"
+velbase_filename = "./UpJak_vel_base_ms.mat"
 datestr = datetime.now().strftime("%y-%b-%d")
 
 issm_pinn_path = issm_filename + "_pinn" + datestr + "_2G"
@@ -27,7 +30,7 @@ issm_pinn_path = issm_filename + "_pinn" + datestr + "_2G"
 # Setting up dictionaries: order doesn't matter, but keys DO matter
 hp = {}
 # Define domain of computation
-hp["shapefile"] = "./UpperJakobshavn_17_11.exp"
+hp["shapefile"] = shapefile_filename
 # Define hyperparameters
 hp["epochs"] = int(1.5e5)
 hp["learning_rate"] = 0.001
@@ -45,14 +48,14 @@ wt_PDE = 1.0e-14
 
 # Load data
 flightTrack = {}
-flightTrack["data_path"] = "UpperJakobshavn_xyz_500.mat"
+flightTrack["data_path"] = ft_filename
 flightTrack["data_size"] = {"H": data_size}
 flightTrack["X_map"] = {"x": "x", "y":"y"}
 flightTrack["name_map"] = {"H": "thickness"}
 flightTrack["source"] = "mat"
 
 velbase = {}
-velbase["data_path"] = "./UpJak_vel_base_ms.mat"
+velbase["data_path"] = velbase_filename
 velbase["data_size"] = {"u_base":data_size, "v_base":data_size}
 velbase["name_map"] = {"u_base":"md_u_base", "v_base":"md_v_base"}
 velbase["X_map"] = {"x":"x", "y":"y"}
@@ -146,7 +149,7 @@ mat_data = {} # make a dictionary to store the MAT data in
 vars2save = ['pred_data','X', 'Y','ref_data']
 for i, var_curr in enumerate(vars2save):
     exec(f'mat_data[u"{var_curr}"] = {var_curr}')
-
+ 
 hdf5storage.savemat(hp["save_path"] + '/' + issm_pinn_path + '_predictions.mat', mat_data, format='7.3', 
                     oned_as='row', store_python_metadata=True)
 
@@ -249,7 +252,7 @@ sol_ref=experiment.model_data.data["ISSM"].data_dict
 if "velbase" in experiment.model_data.data.keys():
     sol_ref.update(experiment.model_data.data["velbase"].data_dict)
 else:
-    vel_base = mat73.loadmat('Ryder_vel_base_ms.mat')
+    vel_base = mat73.loadmat(velbase_filename)
     sol_ref['u_base'] = vel_base['md_u_base']
     sol_ref['v_base'] = vel_base['md_v_base']
 
@@ -270,7 +273,7 @@ ref_data_plot["hs"] = shadecalc_alt(ref_data["s"], resolution, ref_az + (np.pi/2
 ref_names = ref_data_plot.keys()
 
 # Load ft data
-ft_data = mat73.loadmat('Ryder_xyz_500.mat')
+ft_data = mat73.loadmat(ft_filename)
 
 # predicted solutions
 sol_pred = experiment.model.predict(X_nn)
@@ -415,10 +418,10 @@ axs[1,4].plot(ft_data['x'], ft_data['y'],'r',alpha=0.5,linewidth=0.1)
 axs[1,4].ylim = [Y.min(), Y.max()]
 
 if 'hp' in locals():
-    plt.savefig(hp["save_path"]+"/2Dsolutions")
+    plt.savefig(hp["save_path"]+"/2Dsolutions_xyz")
 else:
-    plt.savefig(experiment.params.param_dict["save_path"]+"/2Dsolutions")
-
+    plt.savefig(experiment.params.param_dict["save_path"]+"/2Dsolutions_xyz")
+    
 
 # Plot history on one axis
 from pinnicle.utils.history import load_dict_from_json
@@ -463,6 +466,11 @@ else:
 from scipy.interpolate import interpn
 
 
+total_loss = []
+for item in range(len(history['u'])):
+    total_loss.append(sum(field[item] for field in history.values() if field[item]<1e4))
+
+print('total loss for ', issm_pinn_path, '= ',min(total_loss),' at step', np.argmin(total_loss))
 
 ft_data["H_pred"] = griddata(np.column_stack((X.ravel(), Y.ravel())), pred_data["H"].ravel(), (ft_data['x'],ft_data['y']), method='linear')
 ft_data["H_BM5"] = griddata(np.column_stack((X.ravel(), Y.ravel())), ref_data["H"].ravel(), (ft_data['x'],ft_data['y']), method='linear')
@@ -471,8 +479,8 @@ rmse_H_pred = rmse(ft_data['thickness'], ft_data["H_pred"])
 rmse_H_BM5 = rmse(ft_data['thickness'], ft_data["H_BM5"])
 
 # mask = ~np.isnan(ft_data["thickness"]) & ~np.isnan(ft_data["H_pred"])
-print(rmse_H_pred)
-print(rmse_H_BM5)
+print(issm_pinn_path,'rmse_H_pred: ', rmse_H_pred)
+print(issm_pinn_path,'rmse_H_BM5: ', rmse_H_BM5)
 
 rmses = {k:rmse(ref_data[k], pred_data[k]) for k in ref_data.keys()}
-print(rmses)
+print(issm_pinn_path, ' rmses : ', rmses)
