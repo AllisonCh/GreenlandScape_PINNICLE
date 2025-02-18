@@ -381,7 +381,7 @@ for ax, name in zip(axs[1], ref_data_plot.keys()):
         cbar = fig.colorbar(im, ax=ax, fraction=0.048, location="right", extend = extends[name], ticks=vr)
         cbar.ax.set_title(clabels[name],fontsize='medium')
 
-axs[1,4].scatter(ft_data['x'], ft_data['y'],s=0.05)
+
 
 # fig, axs = plt.subplots(math.floor(n/cols), cols, figsize=(12,9))
 for ax, name in zip(axs[2], perc_diff.keys()):
@@ -411,11 +411,9 @@ if 'hp' in locals():
 else:
     plt.savefig(experiment.params.param_dict["save_path"]+"/2Dsolutions")
 
-axs[0,4].plot(ft_data['x'], ft_data['y'],'r',alpha=0.5,linewidth=0.1)
-axs[0,4].ylim = [Y.min(), Y.max()]
+axs[0,4].plot(ft_data['x'], ft_data['y'],'r.',markersize=0.05,ls='')
 
-axs[1,4].plot(ft_data['x'], ft_data['y'],'r',alpha=0.5,linewidth=0.1)
-axs[1,4].ylim = [Y.min(), Y.max()]
+axs[1,4].plot(ft_data['x'], ft_data['y'],'r.',markersize=0.05,ls='')
 
 if 'hp' in locals():
     plt.savefig(hp["save_path"]+"/2Dsolutions_xyz")

@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH --job-name=UpJak-2025-Feb-13_1G        # Job name (or -J my_job_name)
+#SBATCH --job-name=UpJak-2025-Feb-18_1G        # Job name (or -J my_job_name)
 #SBATCH --output=output.%J           # Standard output file (or -o output.%j for job number to be appended)
 #SBATCH --error=error.%J             # Standard error file (or -e error.%j for job number to be appended)
-#SBATCH --gpus=1		      # Number of GPUs required for job (or -G1)
-#SBATCH --nodes=1                     # Number of nodes (or -N1)
+#SBATCH --gpus=4		      # Number of GPUs required for job (or -G1)
+#SBATCH --nodes=4                     # Number of nodes (or -N1)
 #SBATCH --mem=32000		      # Minimum amount of memory to allocate per node
 #SBATCH --ntasks-per-node=1           # Number of tasks per node (or -n1)
 #SBATCH --cpus-per-task=10             # Number of CPU cores per task (or -c1) 
@@ -17,4 +17,7 @@ module load miniforge
 conda activate PINNICLEenv
 #Run the same task
 #Run tasks in parallel with ‘&’ and 'wait'
-python UpJak_MOLHO_H.py
+srun -G1 -n1 -N1 python UpJak_MOLHO_H1.py &
+srun -G1 -n1 -N1 python UpJak_MOLHO_H2.py &
+srun -G1 -n1 -N1 python UpJak_MOLHO_H3.py &
+srun -G1 -n1 -N1 python UpJak_MOLHO_H4.py & wait

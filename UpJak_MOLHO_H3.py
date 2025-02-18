@@ -32,7 +32,7 @@ hp = {}
 # Define domain of computation
 hp["shapefile"] = shapefile_filename
 # Define hyperparameters
-hp["epochs"] = int(1.5e5)
+hp["epochs"] = int(4e4)
 hp["learning_rate"] = 0.001
 hp["loss_function"] = "MSE"
 
@@ -40,11 +40,11 @@ yts = pinn.physics.Constants().yts
 data_size = 8000
 # data_size_ft = 8000
 wt_uv = (1.0e-2*yts)**2.0
-wt_uvb = (1.0e-2*yts)**2.0
+wt_uvb = (1.0e-1*yts)**2.0
 wt_s = 1.0e-6
 wt_H = 1.0e-7
 wt_C = 5.0e-9
-wt_PDE = 2.0e-14
+wt_PDE = 1.0e-15
 
 # Load data
 flightTrack = {}
@@ -79,7 +79,7 @@ max_uv = np.max(np.abs([issm_data["md"]["inversion"]["vx_obs"], issm_data["md"][
 
 # Add physics
 MOLHO = {}
-MOLHO["scalar_variables"] = {"B":1.5e+08}
+MOLHO["scalar_variables"] = {"B":2e+08}
 hp["equations"] = {"MOLHO":MOLHO}
 #                       # u     v       u_base  v_base  s     H      C
 MOLHO["data_weights"] = [wt_uv, wt_uv, wt_uvb, wt_uvb, wt_s, wt_H, wt_C]
@@ -381,7 +381,7 @@ for ax, name in zip(axs[1], ref_data_plot.keys()):
         cbar = fig.colorbar(im, ax=ax, fraction=0.048, location="right", extend = extends[name], ticks=vr)
         cbar.ax.set_title(clabels[name],fontsize='medium')
 
-axs[1,4].scatter(ft_data['x'], ft_data['y'],s=0.05)
+
 
 # fig, axs = plt.subplots(math.floor(n/cols), cols, figsize=(12,9))
 for ax, name in zip(axs[2], perc_diff.keys()):
@@ -411,11 +411,9 @@ if 'hp' in locals():
 else:
     plt.savefig(experiment.params.param_dict["save_path"]+"/2Dsolutions")
 
-axs[0,4].plot(ft_data['x'], ft_data['y'],'r',alpha=0.5,linewidth=0.1)
-axs[0,4].ylim = [Y.min(), Y.max()]
+axs[0,4].plot(ft_data['x'], ft_data['y'],'r.',markersize=0.05,ls='')
 
-axs[1,4].plot(ft_data['x'], ft_data['y'],'r',alpha=0.5,linewidth=0.1)
-axs[1,4].ylim = [Y.min(), Y.max()]
+axs[1,4].plot(ft_data['x'], ft_data['y'],'r.',markersize=0.05,ls='')
 
 if 'hp' in locals():
     plt.savefig(hp["save_path"]+"/2Dsolutions_xyz")
