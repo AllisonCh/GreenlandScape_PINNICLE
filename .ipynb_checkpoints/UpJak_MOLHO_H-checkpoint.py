@@ -25,7 +25,7 @@ ft_filename = "./UpperJakobshavn_xyz_500.mat"
 velbase_filename = "./UpJak_vel_base_ms.mat"
 datestr = datetime.now().strftime("%y-%b-%d")
 
-issm_pinn_path = issm_filename + "_pinn" + datestr + "_2G"
+issm_pinn_path = issm_filename + "_pinn" + datestr + "_1G"
 # General parameters for training
 # Setting up dictionaries: order doesn't matter, but keys DO matter
 hp = {}
@@ -40,11 +40,11 @@ yts = pinn.physics.Constants().yts
 data_size = 8000
 # data_size_ft = 8000
 wt_uv = (1.0e-2*yts)**2.0
-wt_uvb = (1.0e-1*yts)**2.0
+wt_uvb = (1.0e-2*yts)**2.0
 wt_s = 1.0e-6
 wt_H = 1.0e-7
-wt_C = 1.0e-8
-wt_PDE = 1.0e-14
+wt_C = 5.0e-9
+wt_PDE = 2.0e-14
 
 # Load data
 flightTrack = {}
