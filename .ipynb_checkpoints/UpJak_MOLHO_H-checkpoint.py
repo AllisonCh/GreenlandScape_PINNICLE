@@ -32,8 +32,8 @@ hp = {}
 # Define domain of computation
 hp["shapefile"] = shapefile_filename
 # Define hyperparameters
-hp["epochs"] = int(1.5e5)
-hp["learning_rate"] = 0.001
+hp["epochs"] = int(4e4)
+hp["learning_rate"] = 0.005
 hp["loss_function"] = "MSE"
 
 yts = pinn.physics.Constants().yts
@@ -44,7 +44,7 @@ wt_uvb = (1.0e-2*yts)**2.0
 wt_s = 1.0e-6
 wt_H = 1.0e-7
 wt_C = 5.0e-9
-wt_PDE = 2.0e-14
+wt_PDE = 1.0e-15
 
 # Load data
 flightTrack = {}
