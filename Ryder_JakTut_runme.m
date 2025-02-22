@@ -10,8 +10,8 @@ Path2dataJAM				= '/Users/achartra/Library/CloudStorage/OneDrive-NASA/Greenland-
 Path2dataGS					= '/Users/achartra/Library/CloudStorage/OneDrive-NASA/Greenland-scape/Data/';
 
 % Get tile boundaries
-Tile						= '17_11'; % Ryder is 32_09; East of Jackobsavn (EGIG/Upper Jakobshavn) is 17_11
-Region						= 'UpperJakobshavn';
+Tile						= '21_14'; % Ryder is 32_09; East of Jackobsavn (EGIG/Upper Jakobshavn) is 17_11
+Region						= 'East_Mts';
 
 % Specify save names
 RunNum						= '1'; % CHANGE THIS EACH TIME!!!
@@ -49,7 +49,7 @@ if ~exist(domainFilename, 'file')
 end
 
 % Define desired model domain
-Res							= 5e2;
+Res							= 4.5e2;
 Lx							= Tile_xmax - Tile_xmin;
 Ly							= Tile_ymax - Tile_ymin;
 nx							= round(Lx / Res);
@@ -59,7 +59,7 @@ end
 flow_eq						= 'HO';
 
 FrictionLaw					= 'Weertman';
-Friction_guess				= 2e3;
+Friction_guess				= 3e3;
 cost_fns					= [101 103];
 cost_fns_coeffs				= [40, 1];
 
@@ -68,7 +68,7 @@ Gn							= 3;
 nsteps						= 100;
 maxiter_per_step			= 20;
 
-%%
+
 if any(steps==1) 
 	disp('   Step 1: Mesh creation');
 	md							= squaremesh(model,Lx, Ly, nx, ny);
@@ -77,9 +77,60 @@ if any(steps==1)
 
 	% save(strcat(Region,'Mesh'),'md')
 end 
+%% Non-tiles run
+ISSMpath					= issmdir();
+Path2data					= '/Users/achartra/Library/CloudStorage/OneDrive-NASA/research/data/Greenland/';
+Path2dataJAM				= '/Users/achartra/Library/CloudStorage/OneDrive-NASA/Greenland-scape/Data/JAM/';
+Path2dataGS					= '/Users/achartra/Library/CloudStorage/OneDrive-NASA/Greenland-scape/Data/';
+Path2pinnicle				= '/Users/achartra/Library/CloudStorage/OneDrive-NASA/Greenland-scape/GreenlandScape_PINNICLE/';
+
+Region						= 'East_Mtns';
+Domainshp = shaperead(strcat(Path2pinnicle,'basin_poly_0.shp'));
+pos							= find(isnan(Domainshp.X) | isnan(Domainshp.Y));
+Domainshp.X(pos)			= [];
+Domainshp.Y(pos)			= [];
+
+domainFilename				= strcat(Path2pinnicle,Region,'.exp');
+if ~exist(domainFilename, 'file')
+	fileID					= fopen(domainFilename,'w');
+	fprintf(fileID, '## Name:domainoutline\n');
+	fprintf(fileID, '## Icon:0\n');
+	fprintf(fileID, '# Points Count Value\n');
+	fprintf(fileID, strcat(num2str(length(Domainshp.X)), ' 1.\n'));
+	fprintf(fileID, '# X pos Y pos\n');
+	for ii = 1:length(Domainshp.X)
+		fprintf(fileID, '%d %d\n',[Domainshp.X(ii) Domainshp.Y(ii)]);
+	end
+	fclose(fileID);
+end
+
+% Specify save names
+RunNum						= '1'; % CHANGE THIS EACH TIME!!!
+Now							= datetime;
+Now.Format					= 'uuuu-MMM-dd'; % 'dd-MMM-uuuu_HH-mm-ss';
+structSaveName				= strcat(Path2pinnicle,'Models/',Region,'_issm', char(Now),'_',RunNum);
+mdSaveName					= strcat(Path2pinnicle,'Models/',Region,'.', char(Now),'_',RunNum);
 
 
-if any(steps==1) 
+flow_eq						= 'SSA';
+
+FrictionLaw					= 'Weertman';
+Friction_guess				= 3e3;
+cost_fns					= [101 103 501];
+cost_fns_coeffs				= [3000, 1, 0.01];
+
+Gn							= 3;
+
+nsteps						= 100;
+maxiter_per_step			= 10;
+
+
+
+if ~exist(strcat(Path2pinnicle,'Models/',Region,'.par'),'file')
+	disp('   Step 1: Mesh creation');
+	md							= model;
+	md							= triangle(md,domainFilename,450);
+
 	disp('   Step 2: Parameterization');
 	% md							= loadmodel(strcat(Region,'Mesh'));
 
@@ -117,9 +168,9 @@ if any(steps==1)
 	md.geometry.surface			= InterpFromGridToMesh(x1, y1, h, md.mesh.x, md.mesh.y, 0);
 
 	disp('   Loading velocity data from geotiff');
-	[velx, R]					= readgeoraster(strcat(Path2dataGS,'AMC_test/GrIS_Meas_250m_AvgSurfVel_speed_x_filt_150m.tif'));
-	vely						= readgeoraster(strcat(Path2dataGS,'AMC_test/GrIS_Meas_250m_AvgSurfVel_speed_y_filt_150m.tif'));
-	vel							= readgeoraster(strcat(Path2dataGS,'AMC_test/GrIS_Meas_250m_AvgSurfVel_speed_filt_150m.tif'));
+	[velx, R]					= readgeoraster(strcat(Path2dataGS,'GrIS_Meas_250m_AvgSurfVel_speed_x_filt_150m.tif'));
+	vely						= readgeoraster(strcat(Path2dataGS,'GrIS_Meas_250m_AvgSurfVel_speed_y_filt_150m.tif'));
+	vel							= readgeoraster(strcat(Path2dataGS,'GrIS_Meas_250m_AvgSurfVel_speed_filt_150m.tif'));
 	velx						= flipud(velx);
 	vely						= flipud(vely);
 	vel							= flipud(vel);
@@ -156,10 +207,11 @@ if any(steps==1)
 
 	disp('   Interpolating surface mass balance');
 	md.smb.mass_balance			= InterpFromGridToMesh(MAR.x(1,:),MAR.y(:,1),smb,md.mesh.x,md.mesh.y,0);
+
+	save(strcat(Path2pinnicle,'Models/',Region,'.par'),'md')
 end
 
-if any(steps==2)
-
+loadmodel(strcat(Path2pinnicle,'Models/',Region,'.par'))
 	% set rheology
 	disp('   Construct ice rheological properties');
 	md.materials.rheology_n		= Gn*ones(md.mesh.numberofelements,1);
@@ -177,6 +229,8 @@ if any(steps==2)
 	md.basalforcings.floatingice_melting_rate = zeros(md.mesh.numberofvertices,1);
 	md.basalforcings.groundedice_melting_rate = zeros(md.mesh.numberofvertices,1);
 
+
+
 	if strcmp(FrictionLaw,'waterlayer')
 		md.friction.coefficient		= Friction_guess * ones(md.mesh.numberofvertices,1);
 		md.friction.coefficient(find(md.mask.ocean_levelset<0.)) = 0.;
@@ -190,6 +244,25 @@ if any(steps==2)
 		md.friction.m				= Wm .* ones(md.mesh.numberofelements, 1); % Set m exponent
 		md.friction.C				= Friction_guess .*ones(md.mesh.numberofvertices, 1); % set reference friction coefficient
 	end
+
+	%Control general
+	md.inversion.iscontrol			= 1;
+	md.inversion.nsteps				= nsteps; 
+	md.inversion.step_threshold		= md.inversion.step_threshold(1) * ones(nsteps,1); % 0.99*ones(md.inversion.nsteps,1);
+	md.inversion.maxiter_per_step	= maxiter_per_step*ones(md.inversion.nsteps,1);
+	md.verbose						= verbose('solution',true,'control',true);
+
+	md.inversion.gradient_scaling	= 30 * ones(md.inversion.nsteps,1);
+	md.inversion.min_parameters								= 1 .* ones(md.mesh.numberofvertices,1);
+	md.inversion.max_parameters								= 5e4 .* ones(md.mesh.numberofvertices,1);
+
+	%Cost functions
+	md.inversion.cost_functions							= cost_fns;
+	md.inversion.cost_functions_coefficients			= ones(md.mesh.numberofvertices,length(cost_fns));
+	for ii = 1:length(cost_fns)
+		md.inversion.cost_functions_coefficients(:,ii)	= cost_fns_coeffs(ii);
+	end
+
 
 	% Extrude if necessary
 	if strcmp(flow_eq, 'HO')
@@ -221,27 +294,12 @@ if any(steps==2)
 	% md=parameterize(md,'Ryd.par');
 
 	% save(strcat(Region,'Par'),'mds')
-end 
 
-if any(steps==3) 
 	disp('   Step 3: Control method friction');
 	% mds=loadmodel(strcat(Region,'Par'));
 
 	mds								= setflowequation(mds,flow_eq,'all');
 
-	%Control general
-	mds.inversion.iscontrol			= 1;
-	mds.inversion.nsteps				= nsteps; 
-	mds.inversion.step_threshold		= 0.99*ones(mds.inversion.nsteps,1);
-	mds.inversion.maxiter_per_step	= maxiter_per_step*ones(mds.inversion.nsteps,1);
-	mds.verbose						= verbose('solution',true,'control',true);
-
-	%Cost functions
-	mds.inversion.cost_functions							= cost_fns;
-	mds.inversion.cost_functions_coefficients			= ones(mds.mesh.numberofvertices,length(cost_fns));
-	for ii = 1:length(cost_fns)
-		mds.inversion.cost_functions_coefficients(:,1)	= cost_fns_coeffs(ii);
-	end
 
 	% %Cost functions
 	% md.inversion.cost_functions...
@@ -265,9 +323,7 @@ if any(steps==3)
 		mds.inversion.control_parameters	= {'FrictionC'};
 	end
 	
-	mds.inversion.gradient_scaling(1:mds.inversion.nsteps)	= 30;
-	mds.inversion.min_parameters								= 1e-2 .* ones(mds.mesh.numberofvertices,1);
-	mds.inversion.max_parameters								= 5e4 .* ones(mds.mesh.numberofvertices,1);
+
 
 	%Additional parameters
 	mds.stressbalance.restol			= 1e-5;
@@ -297,30 +353,28 @@ else
 	md.friction.C				= mds.results.StressbalanceSolution.FrictionCoefficient;
 end
 
-end 
+
 
 % save
 
-if any(steps == 4)
+
 	disp('	Saving')
 	save(mdSaveName, 'mds')
 	saveasstruct(md, strcat(structSaveName, '.mat'));
-end
-
 % if any(steps==5) 
 
 	disp('   Plotting')
 	% mds=loadmodel(mdSaveName);
 	% 
-	f1 = figure; plotmodel(mds,'unit#all','km','axis#all','equal',...
-		'data',mds.inversion.vel_obs,'layer',1,'title','Observed velocity',...
-		'data',mds.results.StressbalanceSolution.Vel,'layer',1,'title','Modeled Velocity',...
-		'colorbar#1','off','colorbartitle#2','(m/yr)',...
-		'caxis#1',[0,150],...
-		'data',mds.geometry.base,'layer',2,'title','Base elevation',...
-		'data',mds.friction.C,'layer',2,...
-		'title','Friction Coefficient',...
-		'colorbartitle#3','(m)', 'figure', f1);
+	% f1 = figure; plotmodel(mds,'unit#all','km','axis#all','equal',...
+	% 	'data',mds.inversion.vel_obs,'layer',1,'title','Observed velocity',...
+	% 	'data',mds.results.StressbalanceSolution.Vel,'layer',1,'title','Modeled Velocity',...
+	% 	'colorbar#1','off','colorbartitle#2','(m/yr)',...
+	% 	'caxis#1',[0,150],...
+	% 	'data',mds.geometry.base,'layer',2,'title','Base elevation',...
+	% 	'data',mds.friction.C,'layer',2,...
+	% 	'title','Friction Coefficient',...
+	% 	'colorbartitle#3','(m)', 'figure', f1);
 
 	f1 = figure; plotmodel(md,'unit#all','km','axis#all','image',...
 		'data', md.inversion.vx_obs, 'title', 'u','colorbartitle#1','m/yr',...
@@ -334,28 +388,35 @@ end
 
 % end 
 
-
-
-
+if ~strcmp(flow_eq, 'HO')
+f1 = figure; plotmodel(md,'unit#all','km','axis#all','equal',...
+'data',md.inversion.vel_obs,'title','Observed velocity',...
+'data',mds.results.StressbalanceSolution.Vel,'title','Modeled Velocity',...
+'colorbar#1','off','colorbartitle#2','(m/yr)',...
+'data',md.geometry.base,'title','Base elevation',...
+'data',mds.results.StressbalanceSolution.FrictionC,...
+'title','Friction Coefficient',...
+'colorbartitle#3','(m)', 'figure', f1);
+end
 
 %% Plotting - Weertman friction
 % 
-% 	f1 = figure; plotmodel(md,'unit#all','km','axis#all','equal',...
-% 		'data',md.inversion.vel_obs,'title','Observed velocity',...
-% 		'data',md.results.StressbalanceSolution.Vel,'title','Modeled Velocity',...
-% 		'colorbar#1','off','colorbartitle#2','(m/yr)',...
-% 		'caxis#1',[0,150],...
-% 		'data',md.geometry.base,'title','Base elevation',...
-% 		'data',md.results.StressbalanceSolution.FrictionC,...
-% 		'title','Friction Coefficient',...
-% 		'colorbartitle#3','(m)', 'figure', f1);
-% 
-% 	f1 = figure; plotmodel(md,'unit#all','km','axis#all','image',...
-% 		'data', md.initialization.vx, 'title', 'u','colorbartitle#1','m/yr',...
-% 		'data', md.initialization.vy, 'title', 'v','colorbartitle#2','m/yr',...
-% 		'data', md.geometry.surface, 'title', 'surface elev.','colorbartitle#3','m',...
-% 		'data', md.friction.C,'title','Friction Coefficient',...
-% 		'colormap#1-2', cmocean('thermal'),'colormap#3',demcmap(md.geometry.surface), 'figure', f1)
+	f1 = figure; plotmodel(md,'unit#all','km','axis#all','equal',...
+		'data',md.inversion.vel_obs,'title','Observed velocity',...
+		'data',md.results.StressbalanceSolution.Vel,'title','Modeled Velocity',...
+		'colorbar#1','off','colorbartitle#2','(m/yr)',...
+		'caxis#1',[0,150],...
+		'data',md.geometry.base,'title','Base elevation',...
+		'data',md.results.StressbalanceSolution.FrictionC,...
+		'title','Friction Coefficient',...
+		'colorbartitle#3','(m)', 'figure', f1);
+
+	f1 = figure; plotmodel(md,'unit#all','km','axis#all','image',...
+		'data', md.initialization.vx, 'title', 'u','colorbartitle#1','m/yr',...
+		'data', md.initialization.vy, 'title', 'v','colorbartitle#2','m/yr',...
+		'data', md.geometry.surface, 'title', 'surface elev.','colorbartitle#3','m',...
+		'data', md.friction.C,'title','Friction Coefficient',...
+		'colormap#1-2', cmocean('thermal'),'colormap#3',demcmap(md.geometry.surface), 'figure', f1)
 % 
 % 
 % %% Plotting - water layer friction
@@ -554,3 +615,4 @@ x = md.mesh.x;
 y = md.mesh.y;
 
 save(strcat(PINNICLE_path,Region,'_vel_base_ms.mat'),'x','y','md_u_base','md_v_base','-v7.3')
+
